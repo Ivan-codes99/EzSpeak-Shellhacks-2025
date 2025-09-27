@@ -43,7 +43,7 @@ export function initUI() {
 }
 
 export function updateStatus(msg) {
-  const el = document.getElementById('status');
+  const el = document.getElementById('status-message') || document.getElementById('status');
   if (!el) return;
   // Apply clamping only to transcription-bearing statuses
   if (msg && (msg.startsWith('Recognizing: ') || msg.startsWith('Recognized: '))) {
@@ -54,7 +54,7 @@ export function updateStatus(msg) {
     el.textContent = prefix + clamped;
     if (clamped !== body) el.title = body; else el.removeAttribute('title');
   } else {
-    el.textContent = msg;
+    el.textContent = msg || '';
     el.removeAttribute('title');
   }
 }
@@ -70,7 +70,9 @@ export function setDetectedLanguage(lang) {
 
 export function updateAudioLevel(level) {
   const bar = document.getElementById('audio-indicator');
-  if (bar) bar.style.width = Math.round(Math.min(1, Math.max(0, level)) * 100) + '%';
+  if (!bar) return;
+  const pct = Math.round(Math.min(1, Math.max(0, level)) * 100);
+  bar.style.height = pct + '%';
 }
 
 export function updateSpeechActivity(active) {
