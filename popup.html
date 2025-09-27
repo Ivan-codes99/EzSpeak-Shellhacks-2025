@@ -13,32 +13,45 @@
 
 
 <body>
-    <div class="popup-container">
-
-
-        <h1>Audio Capture</h1>
-        
-        <p class="popup-info">Select a translation target language, then open the side panel.</p>
-        
-        <label for="translationSelect">Translate to:</label>
-        
-
-
-        <select id="translationSelect">
-            <option value="">-- Select language --</option>
-            <option value="en-US">English</option>
-            <option value="es-ES">Spanish</option>
-            <option value="de-DE">German</option>
-        </select>
-
-        
-        <button id="openSidePanelBtn" disabled>Open Side Panel</button>
-
-        
+    <div class="top-nav">
+        <div class="app-info">
+            <div class="app-icon">
+                <img src="talk3.png">
+            </div>
+            <span class="app-name">Ezspeak</span>
+        </div>
+   
     </div>
+
+    <div class="content">
+        <!-- Abstract shapes -->
+        <div class="shape-1"></div>
+        <div class="shape-2"></div>
+        <div class="shape-3"></div>
+
+        
+        <div class="text-content">
+            <h1 class="welcome-text">Welcome to Ezspeak!</h1>
+            <p class="subtitle">Transform your audio into text and translate it instantly with AI in just a single click.</p>
+
+            <div class="feature-item">
+                <span>Language Translation</span>
+            </div>
+
+            <div class="language-section">
+                <select id="translationSelect">
+                    <option value="">-- Select language --</option>
+                    <option value="en-US">English</option>
+                    <option value="es-ES">Spanish</option>
+                    <option value="de-DE">German</option>
+                    
+                </select>
+            </div>
+        </div>
+
+        <button id="openSidePanelBtn" class="get-started-btn" disabled>Get Started</button>
+    </div>
+
     <script src="popup.js"></script>
-
-
-
 </body>
 </html>

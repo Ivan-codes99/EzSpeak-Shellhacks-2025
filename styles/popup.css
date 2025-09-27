@@ -1,72 +1,183 @@
-body {
-    font-family: 'Roboto', Arial, sans-serif;
+css* {
     margin: 0;
     padding: 0;
-    background-color: #f1f3f4; /* light Google-style background */
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    width: 320px;
+    height: 500px;
+    background: #1E1B2E;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+
+     margin: 0; /* Make sure body has no margin */
+    padding: 0; /* Make sure body has no padding */
+}
+
+/* Top navigation bar */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(139, 92, 246, 0.1);
+    backdrop-filter: blur(10px);
+    margin: 0 -16px; /* Negative margin to extend beyond body */
+}
+
+.app-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 15px;
+    
+}
+
+
+
+.app-icon {
+    width: 20px;
+    height: 20px;
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100vh;
 }
 
-.popup-container {
-    width: 450px;
-    max-width: 90%;
-    padding: 30px 25px;
-    background-color: #ffffff; /* white popup */
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-    text-align: center;
-}
 
-.popup-container h1 {
-    font-size: 22px;
-    margin-bottom: 15px;
-    color: #202124;
-}
-
-.popup-info {
-    font-size: 14px;
-    color: #5f6368;
-    margin-bottom: 20px;
-}
-
-label {
-    display: block;
-    text-align: left;
+.app-name {
+    color: white;
+    font-size: 24px;
     font-weight: 500;
-    margin-bottom: 6px;
-    color: #202124;
+    letter-spacing: 1px;
+}
+
+
+
+.text-content {
+    margin-top: -100px;
+}
+
+/* Main content area */
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px 30px;
+    text-align: center;
+    position: relative;
+}
+
+.logo {
+    font-size: 32px;
+    margin-bottom: 30px;
+    z-index: 2;
+}
+
+.welcome-text {
+    color: white;
+    font-size:25px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    z-index: 2;
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 30px;
+    z-index: 2;
+}
+
+.feature-item {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    font-size: 14px;
+    margin-bottom: 20px;
+    z-index: 2;
+}
+
+.feature-icon {
+    width: 24px;
+    height: 24px;
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+/* Language selection */
+.language-section {
+    width: 100%;
+    margin-bottom: 20px;
+    z-index: 2;
 }
 
 select {
     width: 100%;
-    padding: 10px;
+    padding: 12px 16px;
+    background: #2D2A3E; /* Solid dark background */
+    border: 1px solid #8B5CF6;
+    border-radius: 8px;
     font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #dadce0;
-    margin-bottom: 20px;
+    color: white;
     outline: none;
-    transition: border 0.2s;
+    margin-bottom: 16px;
 }
 
 select:focus {
-    border-color: #4285f4; /* Google blue */
-    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+    border-color: #A855F7;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3);
 }
 
-button {
-    width: 100%;
-    padding: 10px;
-    font-size: 15px;
-    border: none;
-    border-radius: 6px;
-    background-color: #4285f4;
+
+select option {
+    background-color: #2D2A3E;
     color: white;
-    cursor: pointer;
-    transition: background-color 0.2s;
 }
 
-button:hover {
-    background-color: #357ae8;
+
+/* Get Started button */
+.get-started-btn {
+    position: absolute;
+    bottom: 45px; /* Distance from bottom - make smaller to move lower */
+    left: 24px;
+    right: 24px;
+    padding: 14px;
+    background: #8B5CF6;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 2;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.get-started-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.get-started-btn:not(:disabled):hover {
+    background: #7C3AED;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.get-started-btn:not(:disabled):active {
+    transform: translateY(0);
 }
