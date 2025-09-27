@@ -9,12 +9,21 @@
 </head>
 <body>
 <h1>EzSpeak sidepanel</h1>
-<p class="helper-text">Open this extension in the tab that you want to translate speech from!</p>
-<p class="info-note">Audio capture works only for the tab where you opened the popup.</p>
-<p id="language-display">Language: (initializing...)</p>
 <p id="detected-language">Detected language: (pending)</p>
 <div id="status"></div>
-<div id="translation-output"></div>
+
+<!-- Original transcript toggle + section -->
+<button id="toggleSourceTranscriptBtn" class="toggle-transcript-btn" aria-expanded="true" aria-controls="source-transcript-section">Original Transcript <span class="chevron" aria-hidden="true"></span></button>
+<div id="source-transcript-section" class="transcript-section">
+  <div id="source-transcript-output" class="transcript-output"></div>
+</div>
+
+<!-- Transcript toggle + section -->
+<button id="toggleTranscriptBtn" class="toggle-transcript-btn" aria-expanded="true" aria-controls="transcript-section">Translation <span class="chevron" aria-hidden="true"></span></button>
+<div id="transcript-section" class="transcript-section">
+  <div id="translation-output" class="transcript-output"></div>
+</div>
+
 <div id="audio-indicator-container">
   <div id="audio-indicator"></div>
 </div>
