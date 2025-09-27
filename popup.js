@@ -24,22 +24,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (openSidePanelBtn && chrome.sidePanel && chrome.sidePanel.open) {
         openSidePanelBtn.addEventListener('click', function() {
-            chrome.windows.getCurrent(function(window) {
-                if (window && window.id !== undefined) {
-                     // Quick slide animation
+            // Rename callback param so we don't shadow the global window object used for closing the popup.
+            chrome.windows.getCurrent(function(chromeWin) {
+                if (chromeWin && chromeWin.id !== undefined) {
+                    // Quick slide animation
                     document.body.style.transform = 'translateX(-100%)';
                     document.body.style.transition = 'transform 0.15s ease-out';
-                
+
                     // Open side panel immediately
-                    chrome.sidePanel.open({windowId: window.id});
-                
-                    // Close popup after brief animation
+                    try { chrome.sidePanel.open({ windowId: chromeWin.id }); } catch (e) { console.warn('Failed to open side panel:', e); }
+
+                    // Close popup after brief animation. Use globalThis.close() explicitly to avoid any shadowing.
                     setTimeout(() => {
-                        window.close();
+                        try {
+                            if (typeof globalThis.close === 'function') {
+                                globalThis.close();
+                            } else if (typeof window !== 'undefined' && typeof window.close === 'function') {
+                                window.close();
+                            }
+                        } catch (e) {
+                            console.warn('Popup close failed:', e);
+                        }
                     }, 150);
-                    
-
-
                 }
             });
         });
