@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>EzSpeak sidepanel</title>
+    <script src="sidepanel.js"></script>
+    <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+<h1>EzSpeak sidepanel</h1>
+<p>Open this extension in the tab that you want to translate speech from!</p>
+<p style="color:#1976d2;font-size:1em;margin-bottom:8px;">Audio capture works only for the tab where you opened the popup.</p>
+<div id="status"></div>
+<div id="audio-indicator-container" style="width:100%;height:18px;margin:10px 0;background:#eee;border-radius:6px;overflow:hidden;">
+  <div id="audio-indicator" style="height:100%;width:0;background:#1976d2;transition:width 0.2s;"></div>
+</div>
+<label for="volumeSlider" style="font-size:0.95em;">Playback volume:</label>
+<input type="range" id="volumeSlider" min="0" max="0.5" step="0.01" value="0.2">
+<span id="volumeValue">20%</span>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 18px;
+    background: #fafbfc;
+    color: #222;
+}
+h1 {
+    font-size: 1.3em;
+    margin-bottom: 0.2em;
+}
+button {
+    padding: 6px 16px;
+    margin-right: 8px;
+    font-size: 1em;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    background: #f5f5f5;
+    cursor: pointer;
+}
+button:disabled {
+    background: #eee;
+    color: #aaa;
+    cursor: not-allowed;
+}
+#status {
+    margin: 10px 0;
+    color: #1976d2;
+    font-weight: bold;
+}
+#audio-indicator-container {
+    width: 100%;
+    height: 18px;
+    margin: 10px 0;
+    background: #eee;
+    border-radius: 6px;
+    overflow: hidden;
+}
+#audio-indicator {
+    height: 100%;
+    width: 0;
+    background: #1976d2;
+    transition: width 0.2s;
+}
+#volumeSlider {
+    width: 120px;
+    margin: 0 8px 0 4px;
+    vertical-align: middle;
+}
+#volumeValue {
+    font-size: 0.95em;
+    color: #1976d2;
+    vertical-align: middle;
+}
