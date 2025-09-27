@@ -86,16 +86,3 @@ export function clearTranslationOutput() {
   const el = document.getElementById('translation-output');
   if (el) { el.textContent = ''; el.removeAttribute('title'); }
 }
-
-export function setTranslationStatus(msg) {
-  const el = document.getElementById('translation-status');
-  if (el) el.textContent = msg || '';
-}
-<<<<<<< Updated upstream
-=======
-
-export function setVoiceStatus(msg) {
-  const el = document.getElementById('voice-status');
-  if (el) el.textContent = msg;
-}
->>>>>>> Stashed changes
