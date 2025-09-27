@@ -1,2 +1,7 @@
 .idea/
-
+.env
+.env.*
+# Ignore any private key or credentials files
+*.key
+*.pem
+credentials.json
