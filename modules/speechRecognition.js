@@ -42,22 +42,44 @@ export function createAutoDetectRecognizer({
   let lastDetected = null;
   function extractLang(result) {
     if (!result) return;
+    let detected = null;
     try {
-      if (SpeechSDK.AutoDetectSourceLanguageResult?.fromResult) {
-        const adr = SpeechSDK.AutoDetectSourceLanguageResult.fromResult(result);
-        if (adr?.language && adr.language !== lastDetected) {
-          lastDetected = adr.language;
-          onLanguageDetected(adr.language);
-        }
-      } else if (result.properties) {
-        const prop = result.properties.getProperty?.(SpeechSDK.PropertyId.SpeechServiceConnection_AutoDetectSourceLanguageResult);
-        if (prop && prop !== lastDetected) {
-          lastDetected = prop;
-          onLanguageDetected(prop);
+      // 1. Property bag raw value (may be plain code or JSON)
+      if (result.properties && SpeechSDK.PropertyId?.SpeechServiceConnection_AutoDetectSourceLanguageResult) {
+        const raw = result.properties.getProperty?.(SpeechSDK.PropertyId.SpeechServiceConnection_AutoDetectSourceLanguageResult);
+        if (raw) {
+          if (/^[A-Za-z]{2,}-[A-Za-z0-9]{2,}$/i.test(raw)) {
+            detected = raw; // already a language code
+          } else if (raw.includes('{')) {
+            try {
+              const parsed = JSON.parse(raw);
+              if (parsed?.Language) detected = parsed.Language;
+              else if (Array.isArray(parsed?.languages) && parsed.languages.length) detected = parsed.languages[0]?.language || parsed.languages[0];
+            } catch(_) { /* ignore parse */ }
+          }
         }
       }
+      // 2. AutoDetectSourceLanguageResult helper
+      if (!detected && SpeechSDK.AutoDetectSourceLanguageResult?.fromResult) {
+        try { const adr = SpeechSDK.AutoDetectSourceLanguageResult.fromResult(result); if (adr?.language) detected = adr.language; } catch(_) {}
+      }
+      // 3. Direct field fallbacks
+      if (!detected && result.language) detected = result.language;
+      if (!detected && result.privLanguage) detected = result.privLanguage; // internal field some builds expose
+      // 4. JSON on result.json
+      if (!detected && result.json) {
+        try {
+          const parsed = JSON.parse(result.json);
+          detected = parsed?.Language || parsed?.language || parsed?.PrimaryLanguage?.Language || null;
+        } catch(_) {}
+      }
+      if (detected && detected !== lastDetected) {
+        lastDetected = detected;
+        onLanguageDetected(detected);
+        try { console.debug('[speechRecognition] Detected language:', detected); } catch(_) {}
+      }
     } catch (err) {
-      console.warn('[speechRecognition] language parse error', err);
+      console.warn('[speechRecognition] language detection error', err);
     }
   }
 
@@ -123,6 +145,11 @@ export function createAutoDetectTranslationRecognizer({
     throw new Error('Incomplete credentials');
   }
 
+  // Ensure a base recognition language is always set (Azure expects SpeechServiceConnection_RecoLanguage even with auto-detect)
+  if (languages.length) {
+    try { translationConfig.speechRecognitionLanguage = languages[0]; } catch(_) {}
+  }
+
   translationConfig.addTargetLanguage(targetLanguage);
 
   const audioConfig = SpeechSDK.AudioConfig.fromStreamInput(pushStream);
@@ -134,8 +161,10 @@ export function createAutoDetectTranslationRecognizer({
 
   let recognizer;
   if (autoDetectConfig && SpeechSDK.TranslationRecognizer?.FromConfig) {
-    try { recognizer = SpeechSDK.TranslationRecognizer.FromConfig(translationConfig, autoDetectConfig, audioConfig); } catch(e) {
-      console.warn('[speechRecognition] TranslationRecognizer.FromConfig failed, fallback.', e);
+    try {
+      recognizer = SpeechSDK.TranslationRecognizer.FromConfig(translationConfig, autoDetectConfig, audioConfig);
+    } catch(e) {
+      console.warn('[speechRecognition] TranslationRecognizer.FromConfig failed, fallback. Base language:', translationConfig.speechRecognitionLanguage, e);
     }
   }
   if (!recognizer) {
@@ -148,22 +177,33 @@ export function createAutoDetectTranslationRecognizer({
   let lastDetected = null;
   function extractLang(result) {
     if (!result) return;
+    let detected = null;
     try {
-      if (SpeechSDK.AutoDetectSourceLanguageResult?.fromResult) {
-        const adr = SpeechSDK.AutoDetectSourceLanguageResult.fromResult(result);
-        if (adr?.language && adr.language !== lastDetected) {
-          lastDetected = adr.language;
-          onLanguageDetected(adr.language);
-        }
-      } else if (result.properties) {
-        const prop = result.properties.getProperty?.(SpeechSDK.PropertyId.SpeechServiceConnection_AutoDetectSourceLanguageResult);
-        if (prop && prop !== lastDetected) {
-          lastDetected = prop;
-          onLanguageDetected(prop);
+      if (result.properties && SpeechSDK.PropertyId?.SpeechServiceConnection_AutoDetectSourceLanguageResult) {
+        const raw = result.properties.getProperty?.(SpeechSDK.PropertyId.SpeechServiceConnection_AutoDetectSourceLanguageResult);
+        if (raw) {
+          if (/^[A-Za-z]{2,}-[A-Za-z0-9]{2,}$/i.test(raw)) {
+            detected = raw;
+          } else if (raw.includes('{')) {
+            try { const parsed = JSON.parse(raw); if (parsed?.Language) detected = parsed.Language; else if (Array.isArray(parsed?.languages) && parsed.languages.length) detected = parsed.languages[0]?.language || parsed.languages[0]; } catch(_) {}
+          }
         }
       }
-    } catch (err) {
-      console.warn('[speechRecognition] translation language parse error', err);
+      if (!detected && SpeechSDK.AutoDetectSourceLanguageResult?.fromResult) {
+        try { const adr = SpeechSDK.AutoDetectSourceLanguageResult.fromResult(result); if (adr?.language) detected = adr.language; } catch(_) {}
+      }
+      if (!detected && result.language) detected = result.language;
+      if (!detected && result.privLanguage) detected = result.privLanguage;
+      if (!detected && result.json) {
+        try { const parsed = JSON.parse(result.json); detected = parsed?.Language || parsed?.language || parsed?.PrimaryLanguage?.Language || null; } catch(_) {}
+      }
+      if (detected && detected !== lastDetected) {
+        lastDetected = detected;
+        onLanguageDetected(detected);
+        try { console.debug('[speechRecognition][translation] Detected language:', detected); } catch(_) {}
+      }
+    } catch(err) {
+      console.warn('[speechRecognition] translation language detection error', err);
     }
   }
 
