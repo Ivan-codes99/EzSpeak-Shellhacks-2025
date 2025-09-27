@@ -63,7 +63,7 @@ async function main() {
     });
   }
 
-  const { pushStream, disposeAudio } = createAudioPushPipeline(stream);
+  const { pushStream, disposeAudio } = await createAudioPushPipeline(stream);
 
   let currentStop = () => {};
   const mode = translationTargetLang ? 'translation' : 'speech';

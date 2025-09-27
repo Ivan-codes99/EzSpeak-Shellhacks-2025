@@ -1,11 +1,10 @@
-// audioProcessing.js (simplified baseline)
-// Minimal pipeline: capture MediaStream -> downsample to 16kHz mono PCM 16-bit -> push to Azure PushAudioInputStream.
-// Removed: worklet batching, keepAlive interval, debug counters, near-silent gain hack.
+// audioProcessing.js (AudioWorklet-based pipeline with fallback)
+// Capture MediaStream -> (AudioWorklet batches mono float32) -> downsample (16k) -> convert 16-bit PCM -> push to Azure PushAudioInputStream.
+// Falls back to deprecated ScriptProcessorNode if AudioWorklet not available or module load fails.
 
-export function createAudioPushPipeline(stream) {
+export async function createAudioPushPipeline(stream) {
   if (!window.SpeechSDK) throw new Error('SpeechSDK not available');
 
-  // Create push stream (explicit format optional; keeping for clarity)
   let format;
   try { format = window.SpeechSDK.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1); } catch(_) {}
   const pushStream = format
@@ -14,7 +13,6 @@ export function createAudioPushPipeline(stream) {
 
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const source = audioContext.createMediaStreamSource(stream);
-
   const targetSampleRate = 16000;
   let disposed = false;
 
@@ -51,24 +49,50 @@ export function createAudioPushPipeline(stream) {
     try { pushStream.write(pcm); } catch(_) {}
   }
 
-  // Simpler deprecated ScriptProcessor (adequate for baseline); avoids worklet complexity.
-  const processor = audioContext.createScriptProcessor(4096, 1, 1);
-  source.connect(processor);
-  // Mute output to prevent echo while keeping graph alive.
-  const mute = audioContext.createGain();
-  mute.gain.value = 0;
-  processor.connect(mute).connect(audioContext.destination);
-  processor.onaudioprocess = e => {
-    if (disposed) return;
-    handleSamples(e.inputBuffer.getChannelData(0));
-  };
+  let workletNode = null;
+  let processor = null; // legacy fallback
+  let mute = null;
+
+  async function initWorklet() {
+    const workletUrl = (typeof chrome !== 'undefined' && chrome.runtime?.getURL)
+      ? chrome.runtime.getURL('pcm-worklet.js')
+      : 'pcm-worklet.js';
+    await audioContext.audioWorklet.addModule(workletUrl);
+    workletNode = new AudioWorkletNode(audioContext, 'pcm-capture-processor');
+    workletNode.port.onmessage = (e) => { handleSamples(e.data); };
+    mute = audioContext.createGain();
+    mute.gain.value = 0; // silence
+    source.connect(workletNode).connect(mute).connect(audioContext.destination);
+  }
+
+  async function initFallbackScriptProcessor() {
+    processor = audioContext.createScriptProcessor(4096, 1, 1);
+    mute = audioContext.createGain();
+    mute.gain.value = 0;
+    source.connect(processor);
+    processor.connect(mute).connect(audioContext.destination);
+    processor.onaudioprocess = e => { if (!disposed) handleSamples(e.inputBuffer.getChannelData(0)); };
+  }
+
+  if (audioContext.audioWorklet && typeof audioContext.audioWorklet.addModule === 'function') {
+    try {
+      await initWorklet();
+    } catch (err) {
+      console.warn('[audioProcessing] AudioWorklet init failed, falling back:', err);
+      await initFallbackScriptProcessor();
+    }
+  } else {
+    console.warn('[audioProcessing] AudioWorklet not supported, using ScriptProcessor fallback');
+    await initFallbackScriptProcessor();
+  }
 
   function disposeAudio() {
     if (disposed) return; disposed = true;
     try { pushStream.close(); } catch(_) {}
-    try { processor.disconnect(); } catch(_) {}
+    try { if (workletNode) { workletNode.port.onmessage = null; workletNode.disconnect(); } } catch(_) {}
+    try { if (processor) processor.disconnect(); } catch(_) {}
     try { source.disconnect(); } catch(_) {}
-    try { mute.disconnect(); } catch(_) {}
+    try { if (mute) mute.disconnect(); } catch(_) {}
     try { audioContext.close(); } catch(_) {}
   }
 
