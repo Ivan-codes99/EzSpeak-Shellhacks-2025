@@ -1,6 +1,14 @@
 // UI utility module
 // Exposes functions to initialize and update the side panel UI elements.
 
+const MAX_TRANSCRIPT_CHARS = 100;
+
+function clampTail(text, max) {
+  if (!text) return '';
+  if (text.length <= max) return text;
+  return '…' + text.slice(-max);
+}
+
 export function initUI() {
   return {
     statusEl: document.getElementById('status'),
@@ -16,7 +24,19 @@ export function initUI() {
 
 export function updateStatus(msg) {
   const el = document.getElementById('status');
-  if (el) el.textContent = msg;
+  if (!el) return;
+  // Apply clamping only to transcription-bearing statuses
+  if (msg && (msg.startsWith('Recognizing: ') || msg.startsWith('Recognized: '))) {
+    const idx = msg.indexOf(': ');
+    const prefix = msg.slice(0, idx + 2); // includes ': '
+    const body = msg.slice(idx + 2);
+    const clamped = clampTail(body, MAX_TRANSCRIPT_CHARS);
+    el.textContent = prefix + clamped;
+    if (clamped !== body) el.title = body; else el.removeAttribute('title');
+  } else {
+    el.textContent = msg;
+    el.removeAttribute('title');
+  }
 }
 
 export function setLanguageCandidates(list) {
@@ -52,18 +72,19 @@ export function updateSpeechActivity(active) {
 export function setTranslationOutput(text, { partial = false } = {}) {
   const el = document.getElementById('translation-output');
   if (!el) return;
+  const clamped = clampTail(text || '', MAX_TRANSCRIPT_CHARS);
   if (partial) {
     el.style.opacity = '0.7';
-    el.textContent = text || '';
   } else {
     el.style.opacity = '1';
-    el.textContent = text || '';
   }
+  el.textContent = clamped;
+  if (clamped !== (text || '')) el.title = text || ''; else el.removeAttribute('title');
 }
 
 export function clearTranslationOutput() {
   const el = document.getElementById('translation-output');
-  if (el) el.textContent = '';
+  if (el) { el.textContent = ''; el.removeAttribute('title'); }
 }
 
 export function setTranslationStatus(msg) {
