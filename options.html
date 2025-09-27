@@ -3,15 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>EzSpeak Settings</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin:16px; }
-    label { display:block; margin-top:12px; font-weight:600; }
-    input[type=text], input[type=password] { width: 360px; max-width:100%; padding:6px 8px; }
-    .row { margin-top:8px; }
-    button { margin-top:16px; padding:8px 16px; cursor:pointer; }
-    #status { margin-top:12px; font-size:0.9em; }
-    .note { font-size:0.8em; color:#555; margin-top:4px; }
-  </style>
+  <link rel="stylesheet" href="styles/options.css">
 </head>
 <body>
   <h1>EzSpeak Settings</h1>
@@ -30,9 +22,8 @@
     <div class="note">Defaults to en-US if left blank.</div>
   </div>
   <button id="saveBtn">Save</button>
-  <button id="clearBtn" style="margin-left:8px;background:#eee;">Clear</button>
+  <button id="clearBtn">Clear</button>
   <div id="status"></div>
   <script src="options.js"></script>
 </body>
 </html>
-
