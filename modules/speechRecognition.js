@@ -41,6 +41,45 @@ export function createAutoDetectRecognizer({
     : new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
 
   let lastDetectedLang = null;
+  let heuristicIssued = false;
+  let sessionStart = performance.now();
+  let partialAggregate = '';
+
+  function guessLanguage(text) {
+    const t = text.toLowerCase();
+    const scores = { 'es-ES': 0, 'de-DE': 0, 'en-US': 0 };
+    // Spanish markers
+    if (/ñ|¿|¡|á|é|í|ó|ú/.test(t)) scores['es-ES'] += 3;
+    [' que ',' para ',' una ',' como ',' los ',' las ',' pero ',' porque ',' tengo ',' hago '].forEach(w=>{ if(t.includes(w)) scores['es-ES']+=1; });
+    // German markers
+    if (/ä|ö|ü|ß/.test(t)) scores['de-DE'] += 3;
+    [' und ',' ich ',' nicht ',' der ',' die ',' das ',' ist ',' habe ',' eine ',' zum '].forEach(w=>{ if(t.includes(w)) scores['de-DE']+=1; });
+    // English markers
+    [' the ',' and ',' you ',' have ',' this ',' that ',' with ',' from ',' just ',' about '].forEach(w=>{ if(t.includes(w)) scores['en-US']+=1; });
+    // Pick max
+    let best = 'en-US';
+    let bestScore = -1;
+    Object.entries(scores).forEach(([k,v])=>{ if(v>bestScore){ bestScore=v; best=k; }});
+    // Basic confidence: difference between top and second
+    const sorted = Object.values(scores).sort((a,b)=>b-a);
+    const margin = sorted[0] - (sorted[1] ?? 0);
+    const tag = margin < 2 ? 'low' : (margin < 4 ? 'medium' : 'high');
+    return { lang: best, confidence: tag, scores };
+  }
+
+  function issueHeuristicIfNeeded(forceFinal=false) {
+    if (lastDetectedLang || heuristicIssued) return;
+    if (partialAggregate.length < 15) return; // not enough text
+    const elapsed = performance.now() - sessionStart;
+    if (!forceFinal && elapsed < 2800) return; // wait ~3s
+    const { lang, confidence } = guessLanguage(partialAggregate);
+    heuristicIssued = true;
+    onLanguageDetected(`~${lang} (heuristic:${confidence})`);
+  }
+
+  // Timed heuristic checks (3s & 5s)
+  setTimeout(()=>issueHeuristicIfNeeded(false), 3000);
+  setTimeout(()=>issueHeuristicIfNeeded(true), 5000);
 
   function extractDetected(result) {
     if (!result) return;
@@ -49,13 +88,15 @@ export function createAutoDetectRecognizer({
         const adr = SpeechSDK.AutoDetectSourceLanguageResult.fromResult(result);
         if (adr && adr.language && adr.language !== lastDetectedLang) {
           lastDetectedLang = adr.language;
-          onLanguageDetected(lastDetectedLang);
+          onLanguageDetected(adr.language); // override heuristic if any
+          return;
         }
       } else {
         const prop = result.properties?.getProperty?.(SpeechSDK.PropertyId.SpeechServiceConnection_AutoDetectSourceLanguageResult);
         if (prop && prop !== lastDetectedLang) {
           lastDetectedLang = prop;
-          onLanguageDetected(lastDetectedLang);
+            onLanguageDetected(prop);
+            return;
         }
       }
     } catch (err) {
@@ -65,15 +106,19 @@ export function createAutoDetectRecognizer({
 
   recognizer.recognizing = (_s, e) => {
     if (e.result && e.result.text) {
+      partialAggregate = e.result.text; // latest partial aggregate
       onRecognizing(e.result.text);
       extractDetected(e.result);
+      issueHeuristicIfNeeded(false);
     }
   };
 
   recognizer.recognized = (_s, e) => {
     if (e.result && e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+      partialAggregate = e.result.text;
       onRecognized(e.result.text);
       extractDetected(e.result);
+      issueHeuristicIfNeeded(true);
     }
   };
 
@@ -94,4 +139,3 @@ export function createAutoDetectRecognizer({
 
   return { recognizer, stop };
 }
-

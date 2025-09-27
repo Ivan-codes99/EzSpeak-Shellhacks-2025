@@ -5,6 +5,13 @@
 export function startVisualization(stream, { onLevel, onSpeechActive }) {
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const source = audioContext.createMediaStreamSource(stream);
+  const gainNode = audioContext.createGain();
+  // Default volume (will be updated by caller if slider present)
+  gainNode.gain.value = 0.2;
+  // Connect for playback
+  source.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  // Analyser after source (or could be after gain; either is fine). Keeping separate for clarity.
   const analyser = audioContext.createAnalyser();
   analyser.fftSize = 256;
   source.connect(analyser);
@@ -65,10 +72,14 @@ export function startVisualization(stream, { onLevel, onSpeechActive }) {
   function stop() {
     try { cancelAnimationFrame(rafId); } catch (_) {}
     try { source.disconnect(); } catch (_) {}
+    try { gainNode.disconnect(); } catch (_) {}
     try { analyser.disconnect(); } catch (_) {}
     try { audioContext.close(); } catch (_) {}
   }
 
-  return { stop };
-}
+  function setVolume(v) {
+    try { gainNode.gain.value = v; } catch (_) {}
+  }
 
+  return { stop, setVolume };
+}
