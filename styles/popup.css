@@ -14,8 +14,6 @@ body {
     overflow: hidden;
     position: relative;
 
-     margin: 0; /* Make sure body has no margin */
-    padding: 0; /* Make sure body has no padding */
 }
 
 /* Top navigation bar */
