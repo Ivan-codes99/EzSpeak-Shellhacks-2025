@@ -67,12 +67,6 @@ button {
     transition: background-color 0.2s;
 }
 
-
-
-
-
-
-
 button:hover {
     background-color: #357ae8;
 }
