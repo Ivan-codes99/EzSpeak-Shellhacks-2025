@@ -1,6 +1,27 @@
 // popup.js
 document.addEventListener('DOMContentLoaded', function() {
     const openSidePanelBtn = document.getElementById('openSidePanelBtn');
+    const translationSelect = document.getElementById('translationSelect');
+
+    if (translationSelect) {
+        translationSelect.addEventListener('change', async () => {
+            const val = translationSelect.value;
+            if (val) {
+                await chrome.storage.local.set({ translationTargetLang: val });
+                openSidePanelBtn.disabled = false;
+            } else {
+                openSidePanelBtn.disabled = true;
+            }
+        });
+        // Attempt to pre-populate from previous choice
+        chrome.storage.local.get(['translationTargetLang'], items => {
+            if (items.translationTargetLang) {
+                translationSelect.value = items.translationTargetLang;
+                openSidePanelBtn.disabled = false;
+            }
+        });
+    }
+
     if (openSidePanelBtn && chrome.sidePanel && chrome.sidePanel.open) {
         openSidePanelBtn.addEventListener('click', function() {
             chrome.windows.getCurrent(function(window) {

@@ -1,95 +1,78 @@
-// audioProcessing.js
-// Responsible for converting a MediaStream into 16 kHz mono PCM chunks and pushing
-// them into an Azure Speech SDK PushAudioInputStream.
+// audioProcessing.js (simplified baseline)
+// Minimal pipeline: capture MediaStream -> downsample to 16kHz mono PCM 16-bit -> push to Azure PushAudioInputStream.
+// Removed: worklet batching, keepAlive interval, debug counters, near-silent gain hack.
 
 export function createAudioPushPipeline(stream) {
   if (!window.SpeechSDK) throw new Error('SpeechSDK not available');
-  const pushStream = window.SpeechSDK.AudioInputStream.createPushStream();
+
+  // Create push stream (explicit format optional; keeping for clarity)
+  let format;
+  try { format = window.SpeechSDK.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1); } catch(_) {}
+  const pushStream = format
+    ? window.SpeechSDK.AudioInputStream.createPushStream(format)
+    : window.SpeechSDK.AudioInputStream.createPushStream();
 
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const source = audioContext.createMediaStreamSource(stream);
 
-  let workletNode = null;
-  let processor = null;
+  const targetSampleRate = 16000;
   let disposed = false;
 
-  const targetSampleRate = 16000;
-
-  function downsampleBuffer(buffer, inputSampleRate, outputSampleRate) {
-    if (outputSampleRate === inputSampleRate) return buffer;
-    const sampleRateRatio = inputSampleRate / outputSampleRate;
-    const newLength = Math.round(buffer.length / sampleRateRatio);
+  function downsampleBuffer(buffer, inputRate, outRate) {
+    if (inputRate === outRate) return buffer;
+    const ratio = inputRate / outRate;
+    const newLength = Math.round(buffer.length / ratio);
     const result = new Float32Array(newLength);
     let offsetResult = 0;
     let offsetBuffer = 0;
-    while (offsetResult < result.length) {
-      const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
-      let accum = 0; let count = 0;
-      for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) { accum += buffer[i]; count++; }
+    while (offsetResult < newLength) {
+      const nextOffset = Math.round((offsetResult + 1) * ratio);
+      let accum = 0, count = 0;
+      for (let i = offsetBuffer; i < nextOffset && i < buffer.length; i++) { accum += buffer[i]; count++; }
       result[offsetResult] = count ? (accum / count) : 0;
-      offsetResult++; offsetBuffer = nextOffsetBuffer;
+      offsetResult++; offsetBuffer = nextOffset;
     }
     return result;
   }
 
-  function floatTo16BitPCM(floatBuffer) {
-    const output = new DataView(new ArrayBuffer(floatBuffer.length * 2));
-    for (let i = 0; i < floatBuffer.length; i++) {
-      let s = Math.max(-1, Math.min(1, floatBuffer[i]));
-      output.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  function floatTo16BitPCM(floatBuf) {
+    const view = new DataView(new ArrayBuffer(floatBuf.length * 2));
+    for (let i = 0; i < floatBuf.length; i++) {
+      let s = Math.max(-1, Math.min(1, floatBuf[i]));
+      view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
     }
-    return new Uint8Array(output.buffer);
+    return new Uint8Array(view.buffer);
   }
 
-  function handleFrame(channelData) {
+  function handleSamples(f32) {
+    if (disposed || !f32 || !f32.length) return;
+    const ds = downsampleBuffer(f32, audioContext.sampleRate, targetSampleRate);
+    const pcm = floatTo16BitPCM(ds);
+    try { pushStream.write(pcm); } catch(_) {}
+  }
+
+  // Simpler deprecated ScriptProcessor (adequate for baseline); avoids worklet complexity.
+  const processor = audioContext.createScriptProcessor(4096, 1, 1);
+  source.connect(processor);
+  // Mute output to prevent echo while keeping graph alive.
+  const mute = audioContext.createGain();
+  mute.gain.value = 0;
+  processor.connect(mute).connect(audioContext.destination);
+  processor.onaudioprocess = e => {
     if (disposed) return;
-    if (!channelData || !channelData.length) return;
-    const ds = downsampleBuffer(channelData, audioContext.sampleRate, targetSampleRate);
-    const pcm16 = floatTo16BitPCM(ds);
-    try { pushStream.write(pcm16); } catch (_) {}
-  }
-
-  const useWorklet = !!audioContext.audioWorklet;
-  if (useWorklet) {
-    audioContext.audioWorklet.addModule('pcm-worklet.js').then(() => {
-      if (disposed) return;
-      workletNode = new AudioWorkletNode(audioContext, 'pcm-capture-processor', { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 });
-      const silentGain = audioContext.createGain();
-      silentGain.gain.value = 0.0;
-      workletNode.connect(silentGain).connect(audioContext.destination);
-      source.connect(workletNode);
-      workletNode.port.onmessage = e => handleFrame(e.data);
-    }).catch(err => {
-      console.warn('[audioProcessing] Worklet failed, falling back:', err);
-      fallbackProcessor();
-    });
-  } else {
-    fallbackProcessor();
-  }
-
-  function fallbackProcessor() {
-    if (disposed) return;
-    processor = audioContext.createScriptProcessor(4096, 1, 1);
-    source.connect(processor);
-    processor.connect(audioContext.destination);
-    processor.onaudioprocess = e => {
-      const input = e.inputBuffer.getChannelData(0);
-      handleFrame(input);
-    };
-  }
+    handleSamples(e.inputBuffer.getChannelData(0));
+  };
 
   function disposeAudio() {
-    if (disposed) return;
-    disposed = true;
-    try { pushStream.close(); } catch (_) {}
-    try { workletNode && workletNode.disconnect(); } catch (_) {}
-    try { processor && processor.disconnect(); } catch (_) {}
-    try { source.disconnect(); } catch (_) {}
-    try { audioContext.close(); } catch (_) {}
+    if (disposed) return; disposed = true;
+    try { pushStream.close(); } catch(_) {}
+    try { processor.disconnect(); } catch(_) {}
+    try { source.disconnect(); } catch(_) {}
+    try { mute.disconnect(); } catch(_) {}
+    try { audioContext.close(); } catch(_) {}
   }
 
-  stream.getAudioTracks()[0].addEventListener('ended', disposeAudio);
+  try { stream.getAudioTracks()[0].addEventListener('ended', disposeAudio); } catch(_) {}
 
   return { pushStream, disposeAudio };
 }
-

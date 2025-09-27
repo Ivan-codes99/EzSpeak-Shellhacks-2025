@@ -49,3 +49,24 @@ export function updateSpeechActivity(active) {
   }
 }
 
+export function setTranslationOutput(text, { partial = false } = {}) {
+  const el = document.getElementById('translation-output');
+  if (!el) return;
+  if (partial) {
+    el.style.opacity = '0.7';
+    el.textContent = text || '';
+  } else {
+    el.style.opacity = '1';
+    el.textContent = text || '';
+  }
+}
+
+export function clearTranslationOutput() {
+  const el = document.getElementById('translation-output');
+  if (el) el.textContent = '';
+}
+
+export function setTranslationStatus(msg) {
+  const el = document.getElementById('translation-status');
+  if (el) el.textContent = msg || '';
+}

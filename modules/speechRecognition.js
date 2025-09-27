@@ -1,12 +1,12 @@
-// speechRecognition.js
-// Creates an auto language detection SpeechRecognizer using Azure Speech SDK.
-// Exports factory returning { recognizer, stop }.
+// speechRecognition.js (simplified baseline)
+// Provides minimal auto language detect speech & translation recognizers.
+// NO heuristic guessing, NO dynamic silence manipulation, NO timers beyond SDK internals.
 
 export function createAutoDetectRecognizer({
   SpeechSDK,
   creds,              // { key, region, token, isToken }
   languages = [],
-  pushStream,         // Azure PushAudioInputStream (already created)
+  pushStream,         // Azure PushAudioInputStream
   onLanguageDetected = () => {},
   onRecognizing = () => {},
   onRecognized = () => {},
@@ -18,21 +18,20 @@ export function createAutoDetectRecognizer({
   if (!pushStream) throw new Error('pushStream missing');
   if (!languages.length) throw new Error('languages list empty');
 
+  // Build speech config
   let speechConfig;
   if (creds.isToken && creds.token) {
     speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(creds.token, creds.region);
   } else if (creds.key && creds.region) {
     speechConfig = SpeechSDK.SpeechConfig.fromSubscription(creds.key, creds.region);
   } else {
-    throw new Error('Incomplete credentials for Speech SDK');
+    throw new Error('Incomplete credentials');
   }
 
-  // Do NOT set speechRecognitionLanguage when using auto-detect.
+  // Auto detect config
   let autoDetectConfig = null;
-  try {
-    autoDetectConfig = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(languages);
-  } catch (e) {
-    console.warn('[speechRecognition] AutoDetect config failed; falling back to first language', e);
+  try { autoDetectConfig = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(languages); } catch (e) {
+    console.warn('[speechRecognition] AutoDetect config failed, falling back to first language', e);
   }
 
   const audioConfig = SpeechSDK.AudioConfig.fromStreamInput(pushStream);
@@ -40,92 +39,43 @@ export function createAutoDetectRecognizer({
     ? SpeechSDK.SpeechRecognizer.FromConfig(speechConfig, autoDetectConfig, audioConfig)
     : new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
 
-  let lastDetectedLang = null;
-  let heuristicIssued = false;
-  let sessionStart = performance.now();
-  let partialAggregate = '';
-
-  function guessLanguage(text) {
-    const t = text.toLowerCase();
-    const scores = { 'es-ES': 0, 'de-DE': 0, 'en-US': 0 };
-    // Spanish markers
-    if (/ñ|¿|¡|á|é|í|ó|ú/.test(t)) scores['es-ES'] += 3;
-    [' que ',' para ',' una ',' como ',' los ',' las ',' pero ',' porque ',' tengo ',' hago '].forEach(w=>{ if(t.includes(w)) scores['es-ES']+=1; });
-    // German markers
-    if (/ä|ö|ü|ß/.test(t)) scores['de-DE'] += 3;
-    [' und ',' ich ',' nicht ',' der ',' die ',' das ',' ist ',' habe ',' eine ',' zum '].forEach(w=>{ if(t.includes(w)) scores['de-DE']+=1; });
-    // English markers
-    [' the ',' and ',' you ',' have ',' this ',' that ',' with ',' from ',' just ',' about '].forEach(w=>{ if(t.includes(w)) scores['en-US']+=1; });
-    // Pick max
-    let best = 'en-US';
-    let bestScore = -1;
-    Object.entries(scores).forEach(([k,v])=>{ if(v>bestScore){ bestScore=v; best=k; }});
-    // Basic confidence: difference between top and second
-    const sorted = Object.values(scores).sort((a,b)=>b-a);
-    const margin = sorted[0] - (sorted[1] ?? 0);
-    const tag = margin < 2 ? 'low' : (margin < 4 ? 'medium' : 'high');
-    return { lang: best, confidence: tag, scores };
-  }
-
-  function issueHeuristicIfNeeded(forceFinal=false) {
-    if (lastDetectedLang || heuristicIssued) return;
-    if (partialAggregate.length < 15) return; // not enough text
-    const elapsed = performance.now() - sessionStart;
-    if (!forceFinal && elapsed < 2800) return; // wait ~3s
-    const { lang, confidence } = guessLanguage(partialAggregate);
-    heuristicIssued = true;
-    onLanguageDetected(`~${lang} (heuristic:${confidence})`);
-  }
-
-  // Timed heuristic checks (3s & 5s)
-  setTimeout(()=>issueHeuristicIfNeeded(false), 3000);
-  setTimeout(()=>issueHeuristicIfNeeded(true), 5000);
-
-  function extractDetected(result) {
+  let lastDetected = null;
+  function extractLang(result) {
     if (!result) return;
     try {
-      if (SpeechSDK.AutoDetectSourceLanguageResult && SpeechSDK.AutoDetectSourceLanguageResult.fromResult) {
+      if (SpeechSDK.AutoDetectSourceLanguageResult?.fromResult) {
         const adr = SpeechSDK.AutoDetectSourceLanguageResult.fromResult(result);
-        if (adr && adr.language && adr.language !== lastDetectedLang) {
-          lastDetectedLang = adr.language;
-          onLanguageDetected(adr.language); // override heuristic if any
-          return;
+        if (adr?.language && adr.language !== lastDetected) {
+          lastDetected = adr.language;
+          onLanguageDetected(adr.language);
         }
-      } else {
-        const prop = result.properties?.getProperty?.(SpeechSDK.PropertyId.SpeechServiceConnection_AutoDetectSourceLanguageResult);
-        if (prop && prop !== lastDetectedLang) {
-          lastDetectedLang = prop;
-            onLanguageDetected(prop);
-            return;
+      } else if (result.properties) {
+        const prop = result.properties.getProperty?.(SpeechSDK.PropertyId.SpeechServiceConnection_AutoDetectSourceLanguageResult);
+        if (prop && prop !== lastDetected) {
+          lastDetected = prop;
+          onLanguageDetected(prop);
         }
       }
     } catch (err) {
-      console.warn('[speechRecognition] Language detection parse error', err);
+      console.warn('[speechRecognition] language parse error', err);
     }
   }
 
   recognizer.recognizing = (_s, e) => {
     if (e.result && e.result.text) {
-      partialAggregate = e.result.text; // latest partial aggregate
+      extractLang(e.result);
       onRecognizing(e.result.text);
-      extractDetected(e.result);
-      issueHeuristicIfNeeded(false);
     }
   };
 
   recognizer.recognized = (_s, e) => {
     if (e.result && e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-      partialAggregate = e.result.text;
+      extractLang(e.result);
       onRecognized(e.result.text);
-      extractDetected(e.result);
-      issueHeuristicIfNeeded(true);
     }
   };
 
-  recognizer.canceled = (_s, e) => {
-    onCanceled(e.errorDetails || 'Canceled');
-  };
-
+  recognizer.canceled = (_s, e) => onCanceled(e.errorDetails || 'Canceled');
   recognizer.sessionStarted = () => onSessionStarted();
   recognizer.sessionStopped = () => onSessionStopped();
 
@@ -133,9 +83,127 @@ export function createAutoDetectRecognizer({
 
   function stop() {
     try {
-      recognizer.stopContinuousRecognitionAsync(() => recognizer.close(), () => recognizer.close());
-    } catch (_) {}
+      recognizer.stopContinuousRecognitionAsync(
+        () => { try { recognizer.close(); } catch(_){} },
+        () => { try { recognizer.close(); } catch(_){} }
+      );
+    } catch(_) {
+      try { recognizer.close(); } catch(_) {}
+    }
+  }
+  return { recognizer, stop };
+}
+
+export function createAutoDetectTranslationRecognizer({
+  SpeechSDK,
+  creds,
+  languages = [],
+  targetLanguage,           // e.g. 'en-US'
+  pushStream,
+  onLanguageDetected = () => {},
+  onSourceRecognizing = () => {},
+  onSourceRecognized = () => {},
+  onTranslationRecognizing = () => {},
+  onTranslationRecognized = () => {},
+  onCanceled = () => {},
+  onSessionStarted = () => {},
+  onSessionStopped = () => {}
+}) {
+  if (!SpeechSDK) throw new Error('SpeechSDK missing');
+  if (!pushStream) throw new Error('pushStream missing');
+  if (!languages.length) throw new Error('languages list empty');
+  if (!targetLanguage) throw new Error('targetLanguage missing');
+
+  let translationConfig;
+  if (creds.isToken && creds.token) {
+    translationConfig = SpeechSDK.SpeechTranslationConfig.fromAuthorizationToken(creds.token, creds.region);
+  } else if (creds.key && creds.region) {
+    translationConfig = SpeechSDK.SpeechTranslationConfig.fromSubscription(creds.key, creds.region);
+  } else {
+    throw new Error('Incomplete credentials');
   }
 
+  translationConfig.addTargetLanguage(targetLanguage);
+
+  const audioConfig = SpeechSDK.AudioConfig.fromStreamInput(pushStream);
+  let autoDetectConfig = null;
+  try { autoDetectConfig = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(languages); } catch(e) {
+    console.warn('[speechRecognition] AutoDetect (translation) failed; defaulting to first', e);
+    translationConfig.speechRecognitionLanguage = languages[0];
+  }
+
+  let recognizer;
+  if (autoDetectConfig && SpeechSDK.TranslationRecognizer?.FromConfig) {
+    try { recognizer = SpeechSDK.TranslationRecognizer.FromConfig(translationConfig, autoDetectConfig, audioConfig); } catch(e) {
+      console.warn('[speechRecognition] TranslationRecognizer.FromConfig failed, fallback.', e);
+    }
+  }
+  if (!recognizer) {
+    if (!translationConfig.speechRecognitionLanguage) {
+      translationConfig.speechRecognitionLanguage = languages[0];
+    }
+    recognizer = new SpeechSDK.TranslationRecognizer(translationConfig, audioConfig);
+  }
+
+  let lastDetected = null;
+  function extractLang(result) {
+    if (!result) return;
+    try {
+      if (SpeechSDK.AutoDetectSourceLanguageResult?.fromResult) {
+        const adr = SpeechSDK.AutoDetectSourceLanguageResult.fromResult(result);
+        if (adr?.language && adr.language !== lastDetected) {
+          lastDetected = adr.language;
+          onLanguageDetected(adr.language);
+        }
+      } else if (result.properties) {
+        const prop = result.properties.getProperty?.(SpeechSDK.PropertyId.SpeechServiceConnection_AutoDetectSourceLanguageResult);
+        if (prop && prop !== lastDetected) {
+          lastDetected = prop;
+          onLanguageDetected(prop);
+        }
+      }
+    } catch (err) {
+      console.warn('[speechRecognition] translation language parse error', err);
+    }
+  }
+
+  recognizer.recognizing = (_s, e) => {
+    if (!e.result) return;
+    extractLang(e.result);
+    const src = e.result.text;
+    if (src) onSourceRecognizing(src);
+    if (e.result.translations && e.result.translations.get(targetLanguage)) {
+      onTranslationRecognizing(e.result.translations.get(targetLanguage));
+    }
+  };
+
+  recognizer.recognized = (_s, e) => {
+    if (!e.result) return;
+    if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+      extractLang(e.result);
+      const src = e.result.text;
+      if (src) onSourceRecognized(src);
+      if (e.result.translations && e.result.translations.get(targetLanguage)) {
+        onTranslationRecognized(e.result.translations.get(targetLanguage));
+      }
+    }
+  };
+
+  recognizer.canceled = (_s, e) => onCanceled(e.errorDetails || 'Canceled');
+  recognizer.sessionStarted = () => onSessionStarted();
+  recognizer.sessionStopped = () => onSessionStopped();
+
+  recognizer.startContinuousRecognitionAsync();
+
+  function stop() {
+    try {
+      recognizer.stopContinuousRecognitionAsync(
+        () => { try { recognizer.close(); } catch(_){} },
+        () => { try { recognizer.close(); } catch(_){} }
+      );
+    } catch(_) {
+      try { recognizer.close(); } catch(_) {}
+    }
+  }
   return { recognizer, stop };
 }
