@@ -26,7 +26,20 @@ document.addEventListener('DOMContentLoaded', function() {
         openSidePanelBtn.addEventListener('click', function() {
             chrome.windows.getCurrent(function(window) {
                 if (window && window.id !== undefined) {
+                     // Quick slide animation
+                    document.body.style.transform = 'translateX(-100%)';
+                    document.body.style.transition = 'transform 0.15s ease-out';
+                
+                    // Open side panel immediately
                     chrome.sidePanel.open({windowId: window.id});
+                
+                    // Close popup after brief animation
+                    setTimeout(() => {
+                        window.close();
+                    }, 150);
+                    
+
+
                 }
             });
         });
