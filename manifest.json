@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "EzSpeak",
+  "description": "Live translation and transcription for online meetings.",
+  "version": "0.1",
+
+  "action": {
+    "default_popup": "popup.html"
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+
+  "permissions": [
+    "tabCapture",
+    "offscreen",
+    "storage",
+    "tabs",
+    "sidePanel",
+    "activeTab"
+  ],
+
+  "host_permissions": [
+    "https://*.azure.com/*",
+    "*://*/*"
+  ]
+}
