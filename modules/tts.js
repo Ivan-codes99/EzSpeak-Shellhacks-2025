@@ -2,9 +2,13 @@
 // Queue-based neural voice playback for final translations.
 
 const DEFAULT_VOICE_MAP = {
-  'en-US': 'en-US-AriaNeural',
-  'es-ES': 'es-ES-ElviraNeural',
-  'de-DE': 'de-DE-KatjaNeural'
+  // Male neural voices
+  'en-US': 'en-US-GuyNeural',
+  'en': 'en-US-GuyNeural',
+  'es-ES': 'es-ES-AlvaroNeural',
+  'es': 'es-ES-AlvaroNeural',
+  'de-DE': 'de-DE-ConradNeural',
+  'de': 'de-DE-ConradNeural'
 };
 
 const TTS_DEBUG = true;
