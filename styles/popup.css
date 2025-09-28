@@ -27,10 +27,14 @@ body {
     display: flex;
     align-items: center;
     padding: var(--space-xs) var(--space-md);
-    background: rgba(50, 50, 50, 0.6);
+    background: rgba(50, 50, 50, 0.55);
     backdrop-filter: blur(10px);
-    margin: 0 -var(--space-lg);
-    min-height: 58px; /* slightly taller for two-line wrap safety */
+    /* old: margin: 0 -var(--space-lg); */
+    margin: var(--space-sm) var(--space-sm) 4px; /* inset so curvature shows */
+    min-height: 58px;
+    border-radius: 20px; /* curvier */
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 14px -4px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.02) inset;
 }
 
 .app-icon {
@@ -47,6 +51,7 @@ body {
     width: 70px;
     height: 50px;
     object-fit: cover;
+    border-radius: 12px;
 }
 
 /* Absolutely centered header independent of icon width */
@@ -87,13 +92,13 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px var(--space-xl) 30px;
+    padding: 36px var(--space-xl) 30px;
     text-align: center;
     position: relative;
 }
 
 .text-content {
-    margin-top: -100px;
+    margin-top: -96px;
 }
 
 .welcome-text {
