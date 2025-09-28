@@ -90,7 +90,7 @@ h1 { /* retained for fallback but unused after header integration */
 
 #status {
   margin: 10px 0 var(--space-section);
-  padding: 10px var(--space-md);
+  padding: 14px var(--space-md) 16px;
   background: var(--bg-elev-2);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -100,7 +100,7 @@ h1 { /* retained for fallback but unused after header integration */
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: var(--space-sm);
+  gap: var(--space-md); /* slightly larger gap to separate new rows */
   line-height: 1.3;
   word-break: break-word;
   transition: background var(--transition-base), color var(--transition-base);
@@ -436,6 +436,105 @@ body::-webkit-scrollbar-thumb:hover { background: #3C3554; }
 .voice-level { background: #181818 !important; border-color: #2A2A2A !important; }
 .voice-level-fill { background: linear-gradient(90deg,#5E46B6 0%, #7A53DD 70%) !important; box-shadow: 0 0 4px rgba(139,92,246,0.45); }
 .voice-level:hover .voice-level-fill, #audio-indicator-container:hover #audio-indicator { filter: brightness(1.05) saturate(1.05); }
+
+/* Structured status box layout additions */
+#status {
+  /* ...existing code... */
+  gap: var(--space-md); /* slightly larger gap to separate new rows */
+  padding: 14px var(--space-md) 16px; /* a bit more breathing room */
+}
+.status-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+.status-top { /* override earlier definition to center items vertically */
+  align-items: center;
+}
+.status-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+  letter-spacing: .3px;
+  min-height: 18px; /* reserve space to avoid layout shift when first message arrives */
+  flex: 1 1 auto;
+}
+.lang-badge {
+  background: radial-gradient(circle at 25% 30%, rgba(139,92,246,0.3) 0%, rgba(139,92,246,0.08) 70%);
+  border: 1px solid rgba(139,92,246,0.35);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.1;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.lang-badge::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,var(--accent),#bfa5ff);
+  box-shadow: 0 0 4px rgba(139,92,246,0.6);
+}
+.audio-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+.audio-bar-row #audio-indicator-container {
+  flex: 1 1 auto;
+  max-width: none;
+  height: 12px; /* slightly taller */
+  margin: 0; /* remove outer margin inside structured row */
+  border-radius: var(--radius-sm);
+}
+#speech-activity { margin: 0; }
+#speech-dot { width: 14px; height: 14px; }
+.playback-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: nowrap;
+}
+.playback-row label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: .3px;
+  min-width: 60px;
+}
+.playback-row #volumeSlider {
+  flex: 1 1 auto;
+  width: auto; /* override earlier fixed width in this context */
+  margin: 0;
+}
+.playback-row #volumeValue {
+  font-size: 12px;
+  min-width: 42px;
+  text-align: right;
+}
+.speech-inline {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+  margin-right: 6px;
+}
+.speech-inline #speech-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+@media (max-width: 520px) {
+  .audio-bar-row { flex-wrap: wrap; }
+  .playback-row { flex-wrap: wrap; }
+  .playback-row label { flex: 0 0 100%; }
+  .playback-row #volumeValue { flex-basis: auto; }
+}
 
 /* Separator line + gap below header */
 .header-separator {
