@@ -5,9 +5,6 @@ const DEFAULT_VOICE_MAP = {
   'de-DE': 'de-DE-ConradNeural', 'de': 'de-DE-ConradNeural'
 };
 
-const TTS_DEBUG = true;
-function tlog(...args) { if (TTS_DEBUG) try { console.log('[tts]', ...args); } catch(_) {} }
-
 export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = DEFAULT_VOICE_MAP, onState = () => {}, onLevel = null }) {
   if (!SpeechSDK) throw new Error('SpeechSDK missing');
   if (!targetLanguage) throw new Error('targetLanguage missing');
@@ -38,7 +35,21 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
         currentLang = lang;
         const config = makeSpeechConfig(lang);
         if (synthesizer) { try { synthesizer.close(); } catch(_) {} }
-        synthesizer = new SpeechSDK.SpeechSynthesizer(config, undefined);
+        // Route synthesis to a non-speaker stream to avoid duplicate playback (we will play result.audioData ourselves)
+        let audioConfig;
+        try {
+          const nullSink = SpeechSDK.AudioOutputStream.createPullStream();
+          audioConfig = SpeechSDK.AudioConfig.fromAudioOutputStream(nullSink);
+        } catch(_) {
+          try {
+            // Fallback for older SDK naming
+            const nullSink = SpeechSDK.AudioOutputStream.createPullStream();
+            audioConfig = SpeechSDK.AudioConfig.fromStreamOutput(nullSink);
+          } catch(_) {
+            audioConfig = undefined; // as a last resort
+          }
+        }
+        synthesizer = new SpeechSDK.SpeechSynthesizer(config, audioConfig);
         creating = null; resolve(synthesizer);
       } catch(e) { creating = null; reject(e); }
     });
@@ -56,15 +67,38 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
   function setVolume(v) { ensureAudioContext(); if (gainNode) gainNode.gain.value = Math.min(1, Math.max(0, Number(v))); }
 
   async function playPcmWavBytes(bytes) {
-    if (!bytes || !bytes.length) return;
+    // Accept both ArrayBuffer and TypedArray views
+    if (!bytes) return;
+    const byteLength = bytes.byteLength !== undefined ? bytes.byteLength : (bytes.length !== undefined ? bytes.length : 0);
+    if (!byteLength) return;
     ensureAudioContext(); try { await audioCtx.resume(); } catch(_) {}
     return new Promise(resolve => {
-      const ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
-      audioCtx.decodeAudioData(ab.slice(0), buffer => {
+      let ab;
+      try {
+        if (bytes instanceof ArrayBuffer) {
+          ab = bytes;
+        } else if (ArrayBuffer.isView(bytes)) {
+          ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+        } else if (bytes.buffer && bytes.byteOffset !== undefined && bytes.byteLength !== undefined) {
+          ab = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+        } else {
+          // Fallback: try to construct a Uint8Array and use its buffer
+          const view = new Uint8Array(bytes);
+          ab = view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength);
+        }
+      } catch(_) { resolve(); return; }
+
+      // decodeAudioData may require a copyable buffer in some browsers
+      const bufToDecode = ab.slice(0);
+      audioCtx.decodeAudioData(bufToDecode, buffer => {
         const src = audioCtx.createBufferSource(); src.buffer = buffer;
         if (analyser) {
-          try { const splitGain = audioCtx.createGain(); src.connect(splitGain); splitGain.connect(analyser); } catch(_) { src.connect(gainNode); }
-        } else src.connect(gainNode);
+          try {
+            src.connect(analyser);
+          } catch(_) { src.connect(gainNode); }
+        } else {
+          src.connect(gainNode);
+        }
         src.onended = resolve; src.start();
         if (analyser && !levelRaf) startLevelLoop();
       }, () => resolve());
@@ -120,8 +154,7 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
     try { if (audioCtx) audioCtx.close(); } catch(_) {}
     synthesizer = null; audioCtx = null; gainNode = null; analyser = null; emit('disposed');
   }
-  function test(text = 'This is a test of the synthesized voice.') { speak(text, targetLanguage); }
 
   emit('enabled');
-  return { speak, setEnabled, dispose, test, setVolume };
+  return { speak, setEnabled, dispose, setVolume };
 }
