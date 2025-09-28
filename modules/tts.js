@@ -117,8 +117,7 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
     try { if (audioCtx) audioCtx.close(); } catch(_) {}
     synthesizer = null; audioCtx = null; gainNode = null; analyser = null; emit('disposed');
   }
-  function test(text = 'This is a test of the synthesized voice.') { speak(text, targetLanguage); }
 
   emit('enabled');
-  return { speak, setEnabled, dispose, test, setVolume };
+  return { speak, setEnabled, dispose, setVolume };
 }
