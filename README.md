@@ -36,6 +36,9 @@ Microsoft Azure Cognitive Services Speech is the backbone of EzSpeak. Azure prov
 4. The Side Panel opens. Allow the audio capture prompt if asked.
 5. Watch captions and translations appear in real time. Toggle “Enable Voice” to have the translation spoken aloud and adjust volume as needed.
 
+## Motivation
+We built EzSpeak because we love studying new languages and wanted a frictionless way to understand and be understood. Living in Miami—surrounded by a vibrant mix of cultures, ethnicities, and constant language switching—inspired us to lower the barrier between people who don’t share a native tongue. As globalization and digital interconnectedness accelerate, we believe real‑time, multilingual access to spoken content should feel ambient and inclusive, not like a separate workflow.
+
 ## Future next steps
 - Better AI voice timing for tighter synchronization with the original speaker.
 - Automatic AI voice selection by analyzing speaker characteristics; optional manual voice selection per session.
