@@ -55,8 +55,8 @@ export async function createAudioPushPipeline(stream) {
 
   async function initWorklet() {
     const workletUrl = (typeof chrome !== 'undefined' && chrome.runtime?.getURL)
-      ? chrome.runtime.getURL('pcm-worklet.js')
-      : 'pcm-worklet.js';
+      ? chrome.runtime.getURL('src/worklets/pcm-worklet.js')
+      : 'src/worklets/pcm-worklet.js';
     await audioContext.audioWorklet.addModule(workletUrl);
     workletNode = new AudioWorkletNode(audioContext, 'pcm-capture-processor');
     workletNode.port.onmessage = (e) => { handleSamples(e.data); };

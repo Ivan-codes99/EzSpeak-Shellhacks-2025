@@ -6,13 +6,13 @@
 // 4. Initialize Azure Speech auto-detect recognizer (speech or translation)
 // 5. Wire UI updates
 
-import { initUI, updateStatus, setDetectedLanguage, updateAudioLevel, updateSpeechActivity, setTranslationOutput, clearTranslationOutput, setSourceTranscriptOutput, clearSourceTranscriptOutput, setVoiceStatus } from './modules/ui.js';
-import { loadSpeechCredentials } from './modules/credentials.js';
-import { captureTabAudio } from './modules/audioCapture.js';
-import { startVisualization } from './modules/visualizer.js';
-import { createAudioPushPipeline } from './modules/audioProcessing.js';
-import { createAutoDetectRecognizer, createAutoDetectTranslationRecognizer } from './modules/speechRecognition.js';
-import { createTTSEngine } from './modules/tts.js'; // Added TTS
+import { initUI, updateStatus, setDetectedLanguage, updateAudioLevel, updateSpeechActivity, setTranslationOutput, clearTranslationOutput, setSourceTranscriptOutput, clearSourceTranscriptOutput, setVoiceStatus } from '../../modules/ui.js';
+import { loadSpeechCredentials } from '../../modules/credentials.js';
+import { captureTabAudio } from '../../modules/audioCapture.js';
+import { startVisualization } from '../../modules/visualizer.js';
+import { createAudioPushPipeline } from '../../modules/audioProcessing.js';
+import { createAutoDetectRecognizer, createAutoDetectTranslationRecognizer } from '../../modules/speechRecognition.js';
+import { createTTSEngine } from '../../modules/tts.js'; // Added TTS
 
 // Minimal language set (auto-detect)
 const AUTO_DETECT_SOURCE_LANGS = ["en-US", "es-ES", "de-DE"];

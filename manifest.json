@@ -5,7 +5,7 @@
   "version": "0.1",
 
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/popup/popup.html",
     "default_icon": "assets/test.jpg"
   },
 
@@ -17,12 +17,12 @@
   },
 
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background/background.js"
   },
   "side_panel": {
-    "default_path": "sidepanel.html"
+    "default_path": "src/sidepanel/sidepanel.html"
   },
-  "options_page": "options.html",
+  "options_page": "src/options/options.html",
 
   "permissions": [
     "tabCapture",
@@ -36,5 +36,13 @@
   "host_permissions": [
     "https://*.azure.com/*",
     "*://*/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/worklets/pcm-worklet.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
   ]
 }
