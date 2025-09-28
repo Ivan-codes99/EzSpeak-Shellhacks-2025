@@ -14,8 +14,10 @@ import { createAudioPushPipeline } from '../../modules/audioProcessing.js';
 import { createAutoDetectRecognizer, createAutoDetectTranslationRecognizer } from '../../modules/speechRecognition.js';
 import { createTTSEngine } from '../../modules/tts.js'; // Added TTS
 
-// Minimal language set (auto-detect)
-const AUTO_DETECT_SOURCE_LANGS = ["en-US", "es-ES", "de-DE"];
+// Minimal language set (auto-detect) restricted to 4 supported languages
+const AUTO_DETECT_SOURCE_LANGS = [
+  "en-US", "es-ES", "fr-FR", "de-DE"
+];
 
 async function main() {
   const ui = initUI();

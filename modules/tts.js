@@ -2,6 +2,7 @@
 const DEFAULT_VOICE_MAP = {
   'en-US': 'en-US-GuyNeural', 'en': 'en-US-GuyNeural',
   'es-ES': 'es-ES-AlvaroNeural', 'es': 'es-ES-AlvaroNeural',
+  'fr-FR': 'fr-FR-HenriNeural', 'fr': 'fr-FR-HenriNeural',
   'de-DE': 'de-DE-ConradNeural', 'de': 'de-DE-ConradNeural'
 };
 
@@ -13,7 +14,7 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
   const queue = []; let speaking = false; let disposed = false;
   let audioCtx = null, gainNode = null, analyser = null, levelRaf = null, lastLevelEmit = 0;
 
-  function voiceFor(lang) { return voiceMap[lang] || voiceMap[lang.split('-')[0]] || 'en-US-AriaNeural'; }
+  function voiceFor(lang) { return voiceMap[lang] || voiceMap[lang.split('-')[0]] || 'en-US-GuyNeural'; }
 
   function makeSpeechConfig(lang) {
     let cfg;

@@ -4,7 +4,12 @@ const MAX_TRANSCRIPT_CHARS = 100;
 const LANGUAGE_NAMES = {
   'en': 'English', 'en-US': 'English', 'en-GB': 'English',
   'es': 'Spanish', 'es-ES': 'Spanish', 'es-MX': 'Spanish',
-  'de': 'German',  'de-DE': 'German'
+  'de': 'German',  'de-DE': 'German',
+  'fr': 'French',  'fr-FR': 'French',
+  'it': 'Italian', 'it-IT': 'Italian',
+  'pt': 'Portuguese', 'pt-BR': 'Portuguese (Brazil)',
+  'ja': 'Japanese', 'ja-JP': 'Japanese',
+  'zh': 'Chinese', 'zh-CN': 'Chinese (Mandarin)'
 };
 
 function humanLanguageName(code) {
