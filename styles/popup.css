@@ -89,7 +89,46 @@ body {
     color: var(--text-secondary);
     font-size: 14px;
     line-height: 1.4;
-    margin-bottom: 30px;
+    margin-bottom: 10px; /* tightened for new list */
+}
+
+/* Tagline styling (nested inside subtitle) */
+.tagline {
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: .25px;
+    background: linear-gradient(90deg,var(--accent) 0%, #c6b5ff 90%);
+    -webkit-background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.35));
+}
+
+/* Benefits list replacing long paragraph */
+.benefits {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+}
+.benefits li {
+    position: relative;
+    padding-left: 16px; /* adjusted for custom dot */
+    line-height: 1.35;
+}
+.benefits li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 6px; /* vertically centers for this font size */
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 2px rgba(0,0,0,0.4);
 }
 
 .feature-item {
