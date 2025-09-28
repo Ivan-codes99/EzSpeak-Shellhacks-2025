@@ -1,17 +1,291 @@
-body { font-family: Arial, sans-serif; margin: 18px; background: #fafbfc; color: #222; }
-h1 { font-size: 1.3em; margin-bottom: 0.2em; }
-button { padding: 6px 16px; margin-right: 8px; font-size: 1em; border: 1px solid #bbb; border-radius: 4px; background: #f5f5f5; cursor: pointer; }
-button:disabled { background: #eee; color: #aaa; cursor: not-allowed; }
-#status { margin: 10px 0; color: #1976d2; font-weight: bold; }
-#language-display { margin: 4px 0 2px; font-size: 0.9em; color: #444; }
-#detected-language { margin: 0 0 10px; font-size: 0.85em; color: #666; }
-#translation-output { margin-top: 8px; font-size: 0.9em; line-height: 1.3; color: #222; min-height: 34px; background: #f4f6f8; border: 1px solid #ddd; padding: 6px 8px; border-radius: 4px; white-space: pre-wrap; }
-#audio-indicator-container { width: 100%; height: 18px; margin: 10px 0; background: #eee; border-radius: 6px; overflow: hidden; }
-#audio-indicator { height: 100%; width: 0; background: #1976d2; transition: width 0.2s; }
-#speech-activity { display: flex; align-items: center; gap: 6px; font-size: 0.8em; color: #444; margin-bottom: 10px; }
-#speech-dot { width: 10px; height: 10px; border-radius: 50%; background: #bbb; display: inline-block; box-shadow: 0 0 0 0 rgba(0,0,0,0.15); }
-#volumeSlider { width: 120px; margin: 0 8px 0 4px; vertical-align: middle; }
-#volumeValue { font-size: 0.95em; color: #1976d2; vertical-align: middle; }
-.info-note { color:#1976d2; font-size:1em; margin-bottom:8px; }
-.helper-text { font-size:0.85em; color:#555; }
+/* Sidepanel dark theme aligned with popup color scheme */
 
+:root {
+  --bg-root: #1E1B2E;
+  --bg-elev-1: #262338;
+  --bg-elev-2: #2D2A3E;
+  --accent: #8B5CF6;
+  --accent-hover: #7C3AED;
+  --accent-focus-ring: rgba(139,92,246,0.35);
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.75);
+  --text-tertiary: rgba(255,255,255,0.55);
+  --border-color: #3A3652;
+  --danger: #EF4444;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --transition-base: 0.25s cubic-bezier(.4,.0,.2,1);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 18px 40px 28px 20px; /* reduced right padding due to slimmer meter */
+  background: var(--bg-root);
+  color: var(--text-primary);
+  line-height: 1.4;
+  min-width: 340px;
+  position: relative;
+  overflow-y: auto;
+}
+
+h1 {
+  /* centered, larger, sleeker */
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  margin: 4px 0 12px;
+  text-align: center;
+  background: linear-gradient(90deg,var(--accent) 0%,#A78BFA 55%,#B794F4 90%);
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.helper-text {
+  font-size: 12px;
+  margin: 0 0 6px;
+  color: var(--text-tertiary);
+}
+
+.info-note {
+  font-size: 13px;
+  margin: 0 0 14px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+#language-display, #detected-language {
+  font-size: 12px;
+  letter-spacing: .25px;
+  margin: 0 0 4px;
+  color: var(--text-secondary);
+}
+#detected-language { margin-bottom: 12px; }
+
+#status {
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  min-height: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  line-height: 1.3;
+  word-break: break-word;
+  transition: background var(--transition-base), color var(--transition-base);
+}
+#status-message { line-height: 1.3; font-size: 13px; min-height: 18px; }
+.session-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* Shared transcript card styling for original + translation */
+.transcript-output {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  min-height: 56px;
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border-color);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  white-space: pre-wrap;
+  position: relative;
+  overflow-wrap: anywhere;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  transition: background var(--transition-base), opacity 0.15s ease;
+}
+
+.transcript-output[title]:hover::after {
+  content: 'Full text available (hover)';
+  position: absolute;
+  bottom: -18px;
+  right: 8px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+/* Placeholders */
+#translation-output:empty::before { content: 'Translation transcript will appear here'; color: var(--text-tertiary); font-style: italic; }
+#source-transcript-output:empty::before { content: 'Original transcript will appear here'; color: var(--text-tertiary); font-style: italic; }
+
+/* Audio level bar */
+#audio-indicator-container {
+  position: fixed; /* fixed relative to viewport, independent of document height */
+  top: 96px; /* higher placement */
+  right: 16px;
+  width: 10px; /* slimmer */
+  height: 180px; /* smaller fixed height */
+  min-height: 160px;
+  max-height: 220px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column-reverse; /* grow upward */
+  z-index: 10; /* sit above scrollable content */
+}
+
+#audio-indicator {
+  width: 100%;
+  height: 0%; /* will be set dynamically */
+  background: linear-gradient(180deg, var(--accent) 0%, #B794F4 70%);
+  box-shadow: 0 0 6px rgba(139,92,246,0.55);
+  transition: height 0.18s ease-out;
+}
+
+/* Speech activity */
+#speech-activity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 4px 0 18px;
+  user-select: none;
+}
+#speech-activity { margin: 0; gap: 6px; }
+
+#speech-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #555;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(0,0,0,0.25);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Updated active styles will be applied dynamically by JS (colors already handled) */
+
+/* Volume control */
+label[for=volumeSlider] {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+#volumeSlider {
+  width: 160px;
+  appearance: none;
+  height: 6px;
+  background: var(--bg-elev-2);
+  border-radius: 10px;
+  outline: none;
+  border: 1px solid var(--border-color);
+  margin: 0 10px 0 6px;
+  vertical-align: middle;
+  cursor: pointer;
+  position: relative;
+}
+#volumeSlider:focus { box-shadow: 0 0 0 3px var(--accent-focus-ring); }
+
+#volumeSlider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  transition: background var(--transition-base), transform 0.15s ease;
+}
+#volumeSlider::-webkit-slider-thumb:hover { background: var(--accent-hover); }
+#volumeSlider::-webkit-slider-thumb:active { transform: scale(0.9); }
+
+/* Firefox */
+#volumeSlider::-moz-range-track {
+  height: 6px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+}
+#volumeSlider::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; background: var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.4); transition: background var(--transition-base), transform 0.15s ease; }
+#volumeSlider::-moz-range-thumb:hover { background: var(--accent-hover); }
+#volumeSlider::-moz-range-thumb:active { transform: scale(0.9); }
+
+.volume-control { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.volume-control label { font-size: 12px; margin: 0; color: var(--text-secondary); }
+.volume-control #volumeSlider { margin: 0; width: 120px; }
+.volume-control #volumeValue { min-width: 32px; text-align: right; }
+
+#volumeValue {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  min-width: 36px;
+  display: inline-block;
+}
+
+/* Utility subtle separators (if needed later) */
+.hr { height: 1px; background: var(--border-color); margin: 18px 0; border: none; }
+
+/* Scrollbar styling (WebKit) */
+body::-webkit-scrollbar { width: 10px; }
+body::-webkit-scrollbar-track { background: var(--bg-root); }
+body::-webkit-scrollbar-thumb { background: #322C48; border-radius: 6px; border: 2px solid var(--bg-root); }
+body::-webkit-scrollbar-thumb:hover { background: #3C3554; }
+
+/* Transcript toggle + collapsible section */
+.toggle-transcript-btn {
+  width: 100%;
+  margin-top: 14px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background var(--transition-base), border-color var(--transition-base);
+}
+.toggle-transcript-btn:hover { background: #322e48; }
+.toggle-transcript-btn:focus { outline: none; box-shadow: 0 0 0 3px var(--accent-focus-ring); }
+.toggle-transcript-btn .chevron {
+  width: 10px; height: 10px;
+  border-right: 2px solid var(--text-secondary);
+  border-bottom: 2px solid var(--text-secondary);
+  transform: rotate(45deg);
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+.toggle-transcript-btn[aria-expanded='false'] .chevron { transform: rotate(-135deg); }
+
+.transcript-section {
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease, transform 0.35s ease;
+  max-height: 320px; /* enough for typical transcript */
+  opacity: 1;
+  transform: translateY(0);
+  will-change: max-height, opacity, transform;
+}
+.transcript-section.collapsed {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+}
+
+/* Slight adjustment so transcript card sits visually grouped */
+.transcript-section #translation-output { margin-top: 8px; }
+
+@media (max-height: 600px) {
+  #audio-indicator-container { top: 88px; height: 150px; }
+}

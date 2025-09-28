@@ -8,23 +8,38 @@
     <link rel="stylesheet" href="styles/sidepanel.css">
 </head>
 <body>
-<h1>EzSpeak sidepanel</h1>
-<p class="helper-text">Open this extension in the tab that you want to translate speech from!</p>
-<p class="info-note">Audio capture works only for the tab where you opened the popup.</p>
-<p id="language-display">Language: (initializing...)</p>
+<h1>EzSpeak</h1>
 <p id="detected-language">Detected language: (pending)</p>
-<div id="status"></div>
-<div id="translation-output"></div>
+<div id="status">
+  <div id="status-message"></div>
+  <div class="session-controls">
+    <div id="speech-activity">
+      <span id="speech-dot"></span>
+      <span id="speech-label">Speech: silence</span>
+    </div>
+    <div class="volume-control" id="volume-control-group">
+      <label for="volumeSlider">Playback:</label>
+      <input type="range" id="volumeSlider" min="0" max="0.5" step="0.01" value="0.2">
+      <span id="volumeValue">20%</span>
+    </div>
+  </div>
+</div>
+
+<!-- Original transcript toggle + section -->
+<button id="toggleSourceTranscriptBtn" class="toggle-transcript-btn" aria-expanded="true" aria-controls="source-transcript-section">Original Transcript <span class="chevron" aria-hidden="true"></span></button>
+<div id="source-transcript-section" class="transcript-section">
+  <div id="source-transcript-output" class="transcript-output"></div>
+</div>
+
+<!-- Transcript toggle + section -->
+<button id="toggleTranscriptBtn" class="toggle-transcript-btn" aria-expanded="true" aria-controls="transcript-section">Translation <span class="chevron" aria-hidden="true"></span></button>
+<div id="transcript-section" class="transcript-section">
+  <div id="translation-output" class="transcript-output"></div>
+</div>
+
 <div id="audio-indicator-container">
   <div id="audio-indicator"></div>
 </div>
-<div id="speech-activity">
-  <span id="speech-dot"></span>
-  <span id="speech-label">Speech: silence</span>
-</div>
-<label for="volumeSlider">Playback volume:</label>
-<input type="range" id="volumeSlider" min="0" max="0.5" step="0.01" value="0.2">
-<span id="volumeValue">20%</span>
 
 </body>
 </html>
