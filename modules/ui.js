@@ -33,8 +33,7 @@ export function initUI() {
     translationTranscriptEl: document.getElementById('translation-output'),
     voiceControls: document.getElementById('voice-controls'),
     voiceToggle: document.getElementById('voiceToggle'),
-    ttsVolumeSlider: document.getElementById('ttsVolumeSlider'),
-    voiceStatus: document.getElementById('voice-status')
+    ttsVolumeSlider: document.getElementById('ttsVolumeSlider')
   };
 }
 
@@ -105,11 +104,4 @@ export function setSourceTranscriptOutput(text, { partial = false } = {}) {
 export function clearSourceTranscriptOutput() {
   const el = document.getElementById('source-transcript-output');
   if (el) { el.textContent = ''; el.removeAttribute('title'); }
-}
-
-export function setVoiceStatus(msg) {
-  const el = document.getElementById('voice-status');
-  if (!el) return;
-  if (el.style.display === 'none') el.style.display = 'inline';
-  el.textContent = msg;
 }
