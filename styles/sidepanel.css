@@ -346,28 +346,6 @@ body::-webkit-scrollbar-thumb:hover { background: #3C3554; }
 #ttsVolumeSlider::-moz-range-thumb:hover { background: var(--accent-hover); }
 #ttsVolumeSlider::-moz-range-thumb:active { transform: scale(.9); }
 
-.voice-status {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .4px;
-  padding: var(--space-xs) 10px;
-  border-radius: 999px;
-  background: var(--bg-elev-1);
-  border: 1px solid var(--border-color);
-  color: var(--text-tertiary);
-  position: relative;
-  min-width: 88px;
-  text-align: center;
-  transition: background var(--transition-base), color var(--transition-base), border-color var(--transition-base);
-}
-.voice-status.busy { color: #FDE68A; border-color: var(--accent); background: #262033; }
-.voice-status.error { color: var(--danger); border-color: #7F1D1D; background: #2D1C1C; }
-.voice-status.disabled { color: var(--text-tertiary); opacity: .7; }
-.voice-status.enabled { color: #C4B5FD; }
-
-@keyframes voicePulse { 0% { box-shadow: 0 0 0 0 rgba(139,92,246,0.55);} 70% { box-shadow: 0 0 0 6px rgba(139,92,246,0);} 100% { box-shadow: 0 0 0 0 rgba(139,92,246,0);} }
-.voice-status.busy { animation: voicePulse 2.2s infinite; }
-
 .voice-heading {
   display: flex;
   align-items: center;
@@ -412,17 +390,9 @@ body::-webkit-scrollbar-thumb:hover { background: #3C3554; }
   background: linear-gradient(90deg,#5E46B6 0%, #7A53DD 70%) !important;
   box-shadow: 0 0 4px rgba(139,92,246,0.45);
 }
-.voice-level {
-  background: #181818 !important;
-  border-color: #2A2A2A !important;
-}
-.voice-level-fill {
-  background: linear-gradient(90deg,#5E46B6 0%, #7A53DD 70%) !important;
-  box-shadow: 0 0 4px rgba(139,92,246,0.45);
-}
-.voice-level:hover .voice-level-fill, #audio-indicator-container:hover #audio-indicator {
-  filter: brightness(1.05) saturate(1.05);
-}
+.voice-level { background: #181818 !important; border-color: #2A2A2A !important; }
+.voice-level-fill { background: linear-gradient(90deg,#5E46B6 0%, #7A53DD 70%) !important; box-shadow: 0 0 4px rgba(139,92,246,0.45); }
+.voice-level:hover .voice-level-fill, #audio-indicator-container:hover #audio-indicator { filter: brightness(1.05) saturate(1.05); }
 
 @media (max-width: 420px) {
   #audio-indicator-container { max-width: 100%; }
