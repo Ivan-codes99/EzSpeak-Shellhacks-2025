@@ -33,11 +33,14 @@
 }
 
 /* Slight type scale adjustments to better match popup */
-body { font-size: 15px; }
-#status { font-size: 14px; }
-.transcript-output { font-size: 15px; }
-.voice-heading { font-size: 14px; }
-.toggle-transcript-btn { font-size: 15px; }
+body { font-size: 16px; }
+#status { font-size: 15px; }
+.transcript-output { font-size: 16px; }
+.voice-heading { font-size: 15px; }
+.toggle-transcript-btn { font-size: 16px; }
+.volume-control label, #speech-activity { font-size: 13px; }
+#volumeValue { font-size: 13px; }
+.detected-lang-line, #detected-language { font-size: 14px; color: var(--text-secondary); letter-spacing: .3px; margin: 0; }
 
 * { box-sizing: border-box; }
 
@@ -83,7 +86,7 @@ h1 { /* retained for fallback but unused after header integration */
   margin: 0 0 var(--space-xs);
   color: var(--text-secondary);
 }
-#detected-language { margin-bottom: var(--space-section); }
+#detected-language { margin-bottom: 0; }
 
 #status {
   margin: 10px 0 var(--space-section);
@@ -91,7 +94,7 @@ h1 { /* retained for fallback but unused after header integration */
   background: var(--bg-elev-2);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   min-height: 42px;
   display: flex;
@@ -108,7 +111,7 @@ h1 { /* retained for fallback but unused after header integration */
 
 .transcript-output {
   margin-top: var(--space-xs);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.4;
   color: var(--text-primary);
   min-height: 56px;

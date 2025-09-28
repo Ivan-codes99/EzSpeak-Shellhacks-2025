@@ -55,7 +55,7 @@ export function updateStatus(msg) {
 
 export function setDetectedLanguage(lang) {
   const el = document.getElementById('detected-language');
-  if (el) el.textContent = 'Detected language: ' + humanLanguageName(lang);
+  if (el) el.textContent = 'Language: ' + humanLanguageName(lang);
 }
 
 export function updateAudioLevel(level) {
