@@ -1,7 +1,73 @@
-body { font-family: Arial, sans-serif; margin:16px; }
-label { display:block; margin-top:12px; font-weight:600; }
-input[type=text], input[type=password] { width: 360px; max-width:100%; padding:6px 8px; }
-.row { margin-top:8px; }
-button { margin-top:16px; padding:8px 16px; cursor:pointer; }
-#status { margin-top:12px; font-size:0.9em; }
-.note { font-size:0.8em; color:#555; margin-top:4px; }
+@import 'variables.css';
+
+body {
+  font-family: var(--font-family-system);
+  margin: var(--space-lg);
+  background: var(--bg-root);
+  color: var(--text-primary);
+}
+
+label {
+  display: block;
+  margin-top: var(--space-md);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+input[type=text], input[type=password] {
+  width: 360px;
+  max-width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+input[type=text]:focus, input[type=password]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-focus-ring);
+}
+
+.row {
+  margin-top: var(--space-sm);
+}
+
+button {
+  margin-top: var(--space-lg);
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: white;
+  font-weight: 500;
+  transition: background var(--transition-fast);
+}
+
+button:hover {
+  background: var(--accent-hover);
+}
+
+button:disabled {
+  background: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+#status {
+  margin-top: var(--space-md);
+  font-size: 0.9em;
+  padding: var(--space-sm);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+}
+
+.note {
+  font-size: 0.8em;
+  color: var(--text-tertiary);
+  margin-top: var(--space-xs);
+}
