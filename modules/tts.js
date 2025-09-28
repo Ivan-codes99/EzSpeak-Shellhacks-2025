@@ -6,6 +6,42 @@ const DEFAULT_VOICE_MAP = {
   'de-DE': 'de-DE-ConradNeural', 'de': 'de-DE-ConradNeural'
 };
 
+/* Alternative voice options for testing (uncomment to try):
+
+// English (US) alternatives:
+// 'en-US': 'en-US-DavisNeural',      // Male, young adult
+// 'en-US': 'en-US-JasonNeural',      // Male, adult
+// 'en-US': 'en-US-TonyNeural',       // Male, older adult
+// 'en-US': 'en-US-AriaNeural',       // Female, young adult
+// 'en-US': 'en-US-JennyNeural',      // Female, assistant style
+// 'en-US': 'en-US-MichelleNeural',   // Female, adult
+
+// Spanish (Spain) alternatives:
+// 'es-ES': 'es-ES-ArnauNeural',      // Male, young adult
+// 'es-ES': 'es-ES-DarioNeural',      // Male, adult
+// 'es-ES': 'es-ES-SaulNeural',       // Male, older adult
+// 'es-ES': 'es-ES-ElviraNeural',     // Female, adult
+// 'es-ES': 'es-ES-AbrilNeural',      // Female, young adult
+// 'es-ES': 'es-ES-TrisaNeural',      // Female, older adult
+
+// French (France) alternatives:
+// 'fr-FR': 'fr-FR-AlainNeural',      // Male, adult
+// 'fr-FR': 'fr-FR-ClaudeNeural',     // Male, older adult
+// 'fr-FR': 'fr-FR-MauriceNeural',    // Male, senior
+// 'fr-FR': 'fr-FR-DeniseNeural',     // Female, adult
+// 'fr-FR': 'fr-FR-EloiseNeural',     // Female, young adult
+// 'fr-FR': 'fr-FR-JacquelineNeural', // Female, older adult
+
+// German (Germany) alternatives:
+// 'de-DE': 'de-DE-KlausNeural',      // Male, adult
+// 'de-DE': 'de-DE-RalfNeural',       // Male, older adult
+// 'de-DE': 'de-DE-BerndNeural',      // Male, senior
+// 'de-DE': 'de-DE-KatjaNeural',      // Female, adult
+// 'de-DE': 'de-DE-AmalaNeural',      // Female, young adult
+// 'de-DE': 'de-DE-GiselaNeural',     // Female, older adult
+
+*/
+
 export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = DEFAULT_VOICE_MAP, onState = () => {}, onLevel = null }) {
   if (!SpeechSDK) throw new Error('SpeechSDK missing');
   if (!targetLanguage) throw new Error('targetLanguage missing');
