@@ -35,7 +35,21 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
         currentLang = lang;
         const config = makeSpeechConfig(lang);
         if (synthesizer) { try { synthesizer.close(); } catch(_) {} }
-        synthesizer = new SpeechSDK.SpeechSynthesizer(config, undefined);
+        // Route synthesis to a non-speaker stream to avoid duplicate playback (we will play result.audioData ourselves)
+        let audioConfig;
+        try {
+          const nullSink = SpeechSDK.AudioOutputStream.createPullStream();
+          audioConfig = SpeechSDK.AudioConfig.fromAudioOutputStream(nullSink);
+        } catch(_) {
+          try {
+            // Fallback for older SDK naming
+            const nullSink = SpeechSDK.AudioOutputStream.createPullStream();
+            audioConfig = SpeechSDK.AudioConfig.fromStreamOutput(nullSink);
+          } catch(_) {
+            audioConfig = undefined; // as a last resort
+          }
+        }
+        synthesizer = new SpeechSDK.SpeechSynthesizer(config, audioConfig);
         creating = null; resolve(synthesizer);
       } catch(e) { creating = null; reject(e); }
     });
