@@ -159,7 +159,12 @@ export function createAutoDetectTranslationRecognizer({
     try { translationConfig.speechRecognitionLanguage = languages[0]; } catch(_) {}
   }
 
-  translationConfig.addTargetLanguage(targetLanguage);
+  // Replace single addTargetLanguage with dual (base + full) for robustness
+  const baseCode = targetLanguage && targetLanguage.includes('-') ? targetLanguage.split('-')[0] : targetLanguage;
+  try {
+    if (baseCode && baseCode !== targetLanguage) translationConfig.addTargetLanguage(baseCode);
+    if (targetLanguage) translationConfig.addTargetLanguage(targetLanguage);
+  } catch(_) {}
 
   const audioConfig = SpeechSDK.AudioConfig.fromStreamInput(pushStream);
   let autoDetectConfig = null;
@@ -221,19 +226,26 @@ export function createAutoDetectTranslationRecognizer({
     extractLang(e.result);
     const src = e.result.text;
     if (src) onSourceRecognizing(src);
-    if (e.result.translations && e.result.translations.get(targetLanguage)) {
-      onTranslationRecognizing(e.result.translations.get(targetLanguage));
+    if (e.result && e.result.translations) {
+      const trMap = e.result.translations;
+      const val = trMap.get(baseCode) || trMap.get(targetLanguage);
+      if (val) onTranslationRecognizing(val);
     }
   };
 
   recognizer.recognized = (_s, e) => {
     if (!e.result) return;
-    if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+    const reason = e.result.reason;
+    // Accept both TranslatedSpeech and RecognizedSpeech (SDK variants) for translation emission
+    const RR = SpeechSDK.ResultReason;
+    if (reason === RR.TranslatedSpeech || reason === RR.RecognizedSpeech) {
       extractLang(e.result);
       const src = e.result.text;
       if (src) onSourceRecognized(src);
-      if (e.result.translations && e.result.translations.get(targetLanguage)) {
-        onTranslationRecognized(e.result.translations.get(targetLanguage));
+      if (e.result.translations) {
+        const trMap = e.result.translations;
+        const val = trMap.get(baseCode) || trMap.get(targetLanguage);
+        if (val) onTranslationRecognized(val);
       }
     }
   };

@@ -38,7 +38,12 @@ export function initUI() {
     volumeSlider: document.getElementById('volumeSlider'),
     volumeValue: document.getElementById('volumeValue'),
     sourceTranscriptEl: document.getElementById('source-transcript-output'),
-    translationTranscriptEl: document.getElementById('translation-output')
+    translationTranscriptEl: document.getElementById('translation-output'),
+    // Voice controls
+    voiceControls: document.getElementById('voice-controls'),
+    voiceToggle: document.getElementById('voiceToggle'),
+    ttsVolumeSlider: document.getElementById('ttsVolumeSlider'),
+    voiceStatus: document.getElementById('voice-status')
   };
 }
 
@@ -72,7 +77,7 @@ export function updateAudioLevel(level) {
   const bar = document.getElementById('audio-indicator');
   if (!bar) return;
   const pct = Math.round(Math.min(1, Math.max(0, level)) * 100);
-  bar.style.height = pct + '%';
+  bar.style.width = pct + '%';
 }
 
 export function updateSpeechActivity(active) {
@@ -116,4 +121,11 @@ export function setSourceTranscriptOutput(text, { partial = false } = {}) {
 export function clearSourceTranscriptOutput() {
   const el = document.getElementById('source-transcript-output');
   if (el) { el.textContent = ''; el.removeAttribute('title'); }
+}
+
+export function setVoiceStatus(msg) {
+  const el = document.getElementById('voice-status');
+  if (!el) return;
+  if (el.style.display === 'none') el.style.display = 'inline';
+  el.textContent = msg;
 }
