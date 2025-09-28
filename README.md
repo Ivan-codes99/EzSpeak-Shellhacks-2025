@@ -22,6 +22,7 @@ It works anywhere audio plays in a tab—no special integration with each site.
 Microsoft Azure Cognitive Services Speech is the backbone of EzSpeak. Azure provides the real‑time speech recognition, translation, and high‑quality voice synthesis that make EzSpeak fast and reliable.
 
 ## When to use it
+- Original idea: two people speaking different languages—each runs the extension to follow and reply in their own language
 - Online classes and lectures
 - Business meetings with multilingual participants
 - Live streams, talks, and tutorials
