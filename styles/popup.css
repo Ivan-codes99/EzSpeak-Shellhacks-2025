@@ -32,11 +32,12 @@ body {
     overflow: visible; /* remove ellipsis cut off */
     text-overflow: initial;
     line-height: 1.05;
+    text-align: center;
 }
 
 .top-nav {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     padding: var(--space-xs) var(--space-md);
     background: rgba(50, 50, 50, 0.6);
@@ -49,9 +50,16 @@ body {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    margin-left: 10px;
-    flex: 1;
-    min-width: 0;
+    margin-left: 0;
+    flex: 0 1 auto;
+}
+
+/* Gradient styling reused for brand name */
+.brand-gradient {
+    background: linear-gradient(90deg,var(--accent) 0%, #c6b5ff 90%);
+    -webkit-background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.35));
 }
 
 .app-icon {
