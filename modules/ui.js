@@ -38,7 +38,13 @@ export function initUI() {
     volumeSlider: document.getElementById('volumeSlider'),
     volumeValue: document.getElementById('volumeValue'),
     sourceTranscriptEl: document.getElementById('source-transcript-output'),
-    translationTranscriptEl: document.getElementById('translation-output')
+    translationTranscriptEl: document.getElementById('translation-output'),
+    // Voice controls
+    voiceControls: document.getElementById('voice-controls'),
+    voiceToggle: document.getElementById('voiceToggle'),
+    testVoiceBtn: document.getElementById('testVoiceBtn'),
+    ttsVolumeSlider: document.getElementById('ttsVolumeSlider'),
+    voiceStatus: document.getElementById('voice-status')
   };
 }
 
@@ -116,4 +122,11 @@ export function setSourceTranscriptOutput(text, { partial = false } = {}) {
 export function clearSourceTranscriptOutput() {
   const el = document.getElementById('source-transcript-output');
   if (el) { el.textContent = ''; el.removeAttribute('title'); }
+}
+
+export function setVoiceStatus(msg) {
+  const el = document.getElementById('voice-status');
+  if (!el) return;
+  if (el.style.display === 'none') el.style.display = 'inline';
+  el.textContent = msg;
 }

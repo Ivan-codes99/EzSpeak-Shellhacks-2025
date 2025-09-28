@@ -6,12 +6,13 @@
 // 4. Initialize Azure Speech auto-detect recognizer (speech or translation)
 // 5. Wire UI updates
 
-import { initUI, updateStatus, setDetectedLanguage, updateAudioLevel, updateSpeechActivity, setTranslationOutput, clearTranslationOutput, setSourceTranscriptOutput, clearSourceTranscriptOutput } from './modules/ui.js';
+import { initUI, updateStatus, setDetectedLanguage, updateAudioLevel, updateSpeechActivity, setTranslationOutput, clearTranslationOutput, setSourceTranscriptOutput, clearSourceTranscriptOutput, setVoiceStatus } from './modules/ui.js';
 import { loadSpeechCredentials } from './modules/credentials.js';
 import { captureTabAudio } from './modules/audioCapture.js';
 import { startVisualization } from './modules/visualizer.js';
 import { createAudioPushPipeline } from './modules/audioProcessing.js';
 import { createAutoDetectRecognizer, createAutoDetectTranslationRecognizer } from './modules/speechRecognition.js';
+import { createTTSEngine } from './modules/tts.js'; // Added TTS
 
 // Minimal language set (auto-detect)
 const AUTO_DETECT_SOURCE_LANGS = ["en-US", "es-ES", "de-DE"];
@@ -93,6 +94,66 @@ async function main() {
   let currentStop = () => {};
   const mode = translationTargetLang ? 'translation' : 'speech';
 
+  // === TTS Integration (translation mode only) ===
+  let ttsEngine = null;
+  let lastSpoken = '';
+  function initVoiceControls() {
+    if (!ui.voiceControls) return;
+    if (mode !== 'translation') {
+      ui.voiceControls.style.display = 'none';
+      return;
+    }
+    ui.voiceControls.style.display = 'flex';
+    if (ui.voiceToggle) {
+      ui.voiceToggle.addEventListener('change', () => {
+        if (ttsEngine) ttsEngine.setEnabled(ui.voiceToggle.checked);
+        setVoiceStatus(ui.voiceToggle.checked ? 'Voice: enabled' : 'Voice: disabled');
+      });
+    }
+    if (ui.testVoiceBtn) {
+      ui.testVoiceBtn.addEventListener('click', () => {
+        try { ttsEngine?.test(); } catch(e) { console.warn('[tts] test error', e); }
+      });
+    }
+    if (ui.ttsVolumeSlider) {
+      ui.ttsVolumeSlider.addEventListener('input', () => {
+        try { ttsEngine?.setVolume(parseFloat(ui.ttsVolumeSlider.value)); } catch(_) {}
+      });
+    }
+  }
+
+  function createAndInitTTS(targetLang) {
+    try {
+      ttsEngine = createTTSEngine({
+        SpeechSDK: window.SpeechSDK,
+        creds,
+        targetLanguage: targetLang,
+        onState: (state, detail) => {
+          switch (state) {
+            case 'enabled': setVoiceStatus('Voice: enabled'); break;
+            case 'disabled': setVoiceStatus('Voice: disabled'); break;
+            case 'queue': setVoiceStatus(`Voice: queue (${detail?.size||0})`); break;
+            case 'synthesizing': setVoiceStatus('Voice: synthesizing'); break;
+            case 'decoding': setVoiceStatus('Voice: decoding'); break;
+            case 'done':
+            case 'idle': setVoiceStatus('Voice: idle'); break;
+            case 'error': setVoiceStatus('Voice: error'); break;
+            case 'disposed': setVoiceStatus('Voice: disposed'); break;
+          }
+        }
+      });
+      initVoiceControls();
+      if (ui.voiceToggle) ttsEngine.setEnabled(ui.voiceToggle.checked);
+      if (ui.ttsVolumeSlider) ttsEngine.setVolume(parseFloat(ui.ttsVolumeSlider.value));
+      if (ui.voiceToggle) setVoiceStatus(ui.voiceToggle.checked ? 'Voice: enabled' : 'Voice: disabled');
+    } catch (e) {
+      console.warn('[tts] init failed', e);
+      setVoiceStatus('Voice: error');
+      ttsEngine = null;
+    }
+  }
+  // === End TTS Integration ===
+
   function startSpeechRecognizer() {
     clearSourceTranscriptOutput();
     const { stop } = createAutoDetectRecognizer({
@@ -116,6 +177,9 @@ async function main() {
     clearSourceTranscriptOutput();
     clearTranslationOutput();
     setTranslationOutput('Awaiting translation...', { partial: true });
+
+    createAndInitTTS(targetLang);
+
     const { stop } = createAutoDetectTranslationRecognizer({
       SpeechSDK: window.SpeechSDK,
       creds,
@@ -126,7 +190,13 @@ async function main() {
       onSourceRecognizing: text => { setSourceTranscriptOutput(text, { partial: true }); },
       onSourceRecognized: text => { setSourceTranscriptOutput(text, { partial: false }); },
       onTranslationRecognizing: t => setTranslationOutput(t, { partial: true }),
-      onTranslationRecognized: t => setTranslationOutput(t, { partial: false }),
+      onTranslationRecognized: t => {
+        setTranslationOutput(t, { partial: false });
+        if (ttsEngine && t && t !== lastSpoken && (!ui.voiceToggle || ui.voiceToggle.checked)) {
+          lastSpoken = t;
+          try { ttsEngine.speak(t, targetLang); } catch(e) { console.warn('[tts] speak error', e); }
+        }
+      },
       onCanceled: err => updateStatus('Translation canceled: ' + err),
       onSessionStarted: () => updateStatus('Translation session started'),
       onSessionStopped: () => updateStatus('Translation session stopped'),
@@ -144,6 +214,7 @@ async function main() {
     try { disposeAudio(); } catch(_) {}
     try { vizController.stop(); } catch(_) {}
     try { stream.getTracks().forEach(t => t.stop()); } catch(_) {}
+    try { ttsEngine?.dispose(); } catch(_) {}
   });
 }
 
