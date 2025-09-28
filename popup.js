@@ -27,27 +27,30 @@ document.addEventListener('DOMContentLoaded', function() {
             // Rename callback param so we don't shadow the global window object used for closing the popup.
             chrome.windows.getCurrent(function(chromeWin) {
                 if (chromeWin && chromeWin.id !== undefined) {
-                    // Quick slide animation
-                    document.body.style.transform = 'translateX(-100%)';
-                    document.body.style.transition = 'transform 0.15s ease-out';
+                    
+                  
 
-                    // Open side panel immediately
-                    try { chrome.sidePanel.open({ windowId: chromeWin.id }); } catch (e) { console.warn('Failed to open side panel:', e); }
+                     // Open side panel immediately
+                    try { 
+                        chrome.sidePanel.open({ windowId: chromeWin.id }); 
+                    } catch (e) { 
+                        console.warn('Failed to open side panel:', e); 
+                    }
 
-                    // Close popup after brief animation. Use globalThis.close() explicitly to avoid any shadowing.
-                    setTimeout(() => {
-                        try {
-                            if (typeof globalThis.close === 'function') {
-                                globalThis.close();
-                            } else if (typeof window !== 'undefined' && typeof window.close === 'function') {
-                                window.close();
-                            }
-                        } catch (e) {
-                            console.warn('Popup close failed:', e);
+                    // Close popup immediately
+                    try {
+                        if (typeof globalThis.close === 'function') {
+                            globalThis.close();
+                        } else if (typeof window !== 'undefined' && typeof window.close === 'function') {
+                            window.close();
                         }
-                    }, 150);
+                    } catch (e) {
+                        console.warn('Popup close failed:', e);
+
+                    }
                 }
             });
+
         });
     }
 });
