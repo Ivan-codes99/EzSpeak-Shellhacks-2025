@@ -1,23 +1,40 @@
 # EzSpeak
 
-## Project Overview
-EzSpeak is a platform designed to enhance language learning and communication. It provides users with interactive tools to improve their speaking and comprehension skills, leveraging modern technology for effective language practice.
+Live captions, translation, and AI voice for anything playing in your Chrome tab. Built for ShellHacks.
 
-## Technology Overview
-EzSpeak utilizes a combination of web technologies and possibly speech processing or machine learning tools to deliver its features. For more details, see the Technology Overview in the docs folder.
+## What it does
+EzSpeak helps you follow and understand spoken content online. Whether it’s a Zoom class, a YouTube talk, or a live stream, EzSpeak:
+- Shows real‑time captions of what’s being said
+- Translates those captions into your language
+- Can read the translation out loud with a natural AI voice
 
-## Technical Design
-The technical architecture, system components, and data flow are described in the Technical Design Overview document in the docs folder.
+It works anywhere audio plays in a tab—no special integration with each site.
 
-## Getting Started
-1. Clone this repository to your local machine.
-2. Install any required dependencies (see project-specific instructions if available).
-3. Refer to the documentation in the `docs/` folder for setup and usage details.
+## How it works (high level)
+- EzSpeak listens to the audio from your current browser tab.
+- The audio is sent securely to Microsoft Azure Cognitive Services Speech, which powers:
+  - Speech‑to‑text (captions)
+  - Translation (your chosen language)
+  - Text‑to‑speech (optional AI voice)
+- Results appear in Chrome’s Side Panel so you can read along and, if you want, hear the translated voice.
 
-## Documentation
-- [Project Brief](docs/Project_brief.pdf)
-- [Technology Overview](docs/Data_Dictionary__Technology_Overview.pdf)
-- [Technical Design Overview](docs/Technical_Design_Overview.pdf)
+## Powered by Azure
+Microsoft Azure Cognitive Services Speech is the backbone of EzSpeak. Azure provides the real‑time speech recognition, translation, and high‑quality voice synthesis that make EzSpeak fast and reliable.
 
----
-For more information, please refer to the documentation in the `docs/` folder.
+## When to use it
+- Online classes and lectures
+- Business meetings with multilingual participants
+- Live streams, talks, and tutorials
+- Language learning and practice
+- Any Chrome tab with speech audio (e.g., YouTube, Twitch, Discord)
+
+## User flow (how you use it)
+1. Install the extension.
+2. Click the extension icon to open the popup.
+3. Choose the language you want translations in and press “Get Started.”
+4. The Side Panel opens. Allow the audio capture prompt if asked.
+5. Watch captions and translations appear in real time. Toggle “Enable Voice” to have the translation spoken aloud and adjust volume as needed.
+
+
+
+— Team EzSpeak
