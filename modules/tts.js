@@ -5,9 +5,6 @@ const DEFAULT_VOICE_MAP = {
   'de-DE': 'de-DE-ConradNeural', 'de': 'de-DE-ConradNeural'
 };
 
-const TTS_DEBUG = true;
-function tlog(...args) { if (TTS_DEBUG) try { console.log('[tts]', ...args); } catch(_) {} }
-
 export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = DEFAULT_VOICE_MAP, onState = () => {}, onLevel = null }) {
   if (!SpeechSDK) throw new Error('SpeechSDK missing');
   if (!targetLanguage) throw new Error('targetLanguage missing');
