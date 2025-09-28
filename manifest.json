@@ -6,14 +6,14 @@
 
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "test.jpg"
+    "default_icon": "assets/test.jpg"
   },
 
   "icons": {
-    "16": "test.jpg",
-    "32": "test.jpg",
-    "48": "test.jpg",
-    "128": "test.jpg"
+    "16": "assets/test.jpg",
+    "32": "assets/test.jpg",
+    "48": "assets/test.jpg",
+    "128": "assets/test.jpg"
   },
 
   "background": {
