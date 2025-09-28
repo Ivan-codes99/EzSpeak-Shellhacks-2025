@@ -22,33 +22,33 @@
       <input type="range" id="volumeSlider" min="0" max="0.5" step="0.01" value="0.2">
       <span id="volumeValue">20%</span>
     </div>
-    <!-- Voice (AI TTS) controls shown only in translation mode by JS -->
-    <div id="voice-controls" style="display:none; align-items:center; gap:4px;">
-      <label style="font-size:12px; display:flex; align-items:center; gap:2px;">
-        <input type="checkbox" id="voiceToggle" checked>
-        Voice
-      </label>
-      <button id="testVoiceBtn" type="button" style="font-size:11px; padding:2px 6px;">Test</button>
-      <input type="range" id="ttsVolumeSlider" min="0" max="1" step="0.05" value="1" title="Voice volume" style="width:70px;">
-      <span id="voice-status" style="font-size:11px; display:none;">Voice: idle</span>
-    </div>
   </div>
 </div>
-
+<div class="section-divider"></div>
 <!-- Original transcript toggle + section -->
 <button id="toggleSourceTranscriptBtn" class="toggle-transcript-btn" aria-expanded="true" aria-controls="source-transcript-section">Original Transcript <span class="chevron" aria-hidden="true"></span></button>
 <div id="source-transcript-section" class="transcript-section">
   <div id="source-transcript-output" class="transcript-output"></div>
 </div>
-
+<div class="section-divider"></div>
 <!-- Transcript toggle + section -->
 <button id="toggleTranscriptBtn" class="toggle-transcript-btn" aria-expanded="true" aria-controls="transcript-section">Translation <span class="chevron" aria-hidden="true"></span></button>
 <div id="transcript-section" class="transcript-section">
   <div id="translation-output" class="transcript-output"></div>
 </div>
-
+<div class="section-divider"></div>
 <div id="audio-indicator-container">
   <div id="audio-indicator"></div>
+</div>
+<!-- Moved AI Voice controls to bottom -->
+<div class="section-divider"></div>
+<div id="voice-controls" style="display:none; align-items:center; gap:8px; margin-top:4px; padding-top:2px;">
+  <label style="font-size:12px; display:flex; align-items:center; gap:4px;">
+    <input type="checkbox" id="voiceToggle" checked>
+    Voice
+  </label>
+  <input type="range" id="ttsVolumeSlider" min="0" max="1" step="0.05" value="1" title="Voice volume" style="width:90px;">
+  <span id="voice-status" style="font-size:11px; display:none;">Voice: idle</span>
 </div>
 
 </body>

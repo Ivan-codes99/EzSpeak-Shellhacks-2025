@@ -110,11 +110,6 @@ async function main() {
         setVoiceStatus(ui.voiceToggle.checked ? 'Voice: enabled' : 'Voice: disabled');
       });
     }
-    if (ui.testVoiceBtn) {
-      ui.testVoiceBtn.addEventListener('click', () => {
-        try { ttsEngine?.test(); } catch(e) { console.warn('[tts] test error', e); }
-      });
-    }
     if (ui.ttsVolumeSlider) {
       ui.ttsVolumeSlider.addEventListener('input', () => {
         try { ttsEngine?.setVolume(parseFloat(ui.ttsVolumeSlider.value)); } catch(_) {}

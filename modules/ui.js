@@ -42,7 +42,6 @@ export function initUI() {
     // Voice controls
     voiceControls: document.getElementById('voice-controls'),
     voiceToggle: document.getElementById('voiceToggle'),
-    testVoiceBtn: document.getElementById('testVoiceBtn'),
     ttsVolumeSlider: document.getElementById('ttsVolumeSlider'),
     voiceStatus: document.getElementById('voice-status')
   };
