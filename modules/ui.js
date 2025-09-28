@@ -42,7 +42,6 @@ export function initUI() {
     // Voice controls
     voiceControls: document.getElementById('voice-controls'),
     voiceToggle: document.getElementById('voiceToggle'),
-    testVoiceBtn: document.getElementById('testVoiceBtn'),
     ttsVolumeSlider: document.getElementById('ttsVolumeSlider'),
     voiceStatus: document.getElementById('voice-status')
   };
@@ -78,7 +77,7 @@ export function updateAudioLevel(level) {
   const bar = document.getElementById('audio-indicator');
   if (!bar) return;
   const pct = Math.round(Math.min(1, Math.max(0, level)) * 100);
-  bar.style.height = pct + '%';
+  bar.style.width = pct + '%';
 }
 
 export function updateSpeechActivity(active) {
