@@ -1,4 +1,4 @@
-// Orchestrator for side panel logic (ES module)
+// Side panel orchestration: credentials -> capture -> visualize -> recognize (speech or translation + optional TTS).
 // Responsibilities:
 // 1. Acquire credentials
 // 2. Capture tab audio
@@ -6,13 +6,13 @@
 // 4. Initialize Azure Speech auto-detect recognizer (speech or translation)
 // 5. Wire UI updates
 
-import { initUI, updateStatus, setDetectedLanguage, updateAudioLevel, updateSpeechActivity, setTranslationOutput, clearTranslationOutput, setSourceTranscriptOutput, clearSourceTranscriptOutput, setVoiceStatus } from './modules/ui.js';
-import { loadSpeechCredentials } from './modules/credentials.js';
-import { captureTabAudio } from './modules/audioCapture.js';
-import { startVisualization } from './modules/visualizer.js';
-import { createAudioPushPipeline } from './modules/audioProcessing.js';
-import { createAutoDetectRecognizer, createAutoDetectTranslationRecognizer } from './modules/speechRecognition.js';
-import { createTTSEngine } from './modules/tts.js'; // Added TTS
+import { initUI, updateStatus, setDetectedLanguage, updateAudioLevel, updateSpeechActivity, setTranslationOutput, clearTranslationOutput, setSourceTranscriptOutput, clearSourceTranscriptOutput } from '../../modules/ui.js';
+import { loadSpeechCredentials } from '../../modules/credentials.js';
+import { captureTabAudio } from '../../modules/audioCapture.js';
+import { startVisualization } from '../../modules/visualizer.js';
+import { createAudioPushPipeline } from '../../modules/audioProcessing.js';
+import { createAutoDetectRecognizer, createAutoDetectTranslationRecognizer } from '../../modules/speechRecognition.js';
+import { createTTSEngine } from '../../modules/tts.js'; // Added TTS
 
 // Minimal language set (auto-detect)
 const AUTO_DETECT_SOURCE_LANGS = ["en-US", "es-ES", "de-DE"];
@@ -107,7 +107,10 @@ async function main() {
     if (ui.voiceToggle) {
       ui.voiceToggle.addEventListener('change', () => {
         if (ttsEngine) ttsEngine.setEnabled(ui.voiceToggle.checked);
-        // No status text for enable/disable states anymore
+        if (!ui.voiceToggle.checked) {
+          const fill = document.getElementById('voice-level-fill');
+          if (fill) { fill.style.width = '0%'; fill.classList.remove('active'); }
+        }
       });
     }
     if (ui.ttsVolumeSlider) {
@@ -119,39 +122,23 @@ async function main() {
 
   function createAndInitTTS(targetLang) {
     try {
-      const voiceLevelEl = document.getElementById('voice-level');
       const voiceLevelFill = document.getElementById('voice-level-fill');
-      let smooth = 0; // simple smoothing for UI
+      let smooth = 0;
       ttsEngine = createTTSEngine({
         SpeechSDK: window.SpeechSDK,
         creds,
         targetLanguage: targetLang,
-        onState: (state, detail) => {
-          switch (state) {
-            case 'queue':
-            case 'synthesizing':
-            case 'decoding':
-            case 'error':
-              // status pill removed; ignoring textual output
-              break;
-            default:
-              break;
-          }
+        onState: (state) => {
           if (state === 'error' && voiceLevelFill) {
             voiceLevelFill.style.background = 'linear-gradient(180deg,#EF4444,#B91C1C)';
           }
         },
         onLevel: (rms) => {
           if (!voiceLevelFill) return;
-          // scale RMS (0..1) to something more visually responsive
-            smooth = smooth * 0.7 + rms * 0.3;
-            const pct = Math.min(1, smooth * 3); // boost visual
-            voiceLevelFill.style.height = (pct * 100).toFixed(1) + '%';
-            if (pct > 0.02) {
-              voiceLevelFill.classList.add('active');
-            } else {
-              voiceLevelFill.classList.remove('active');
-            }
+          smooth = smooth * 0.7 + rms * 0.3;
+          const pct = Math.min(1, smooth * 3); // amplify visually
+          voiceLevelFill.style.width = (pct * 100).toFixed(1) + '%';
+          if (pct > 0.02) voiceLevelFill.classList.add('active'); else voiceLevelFill.classList.remove('active');
         }
       });
       initVoiceControls();

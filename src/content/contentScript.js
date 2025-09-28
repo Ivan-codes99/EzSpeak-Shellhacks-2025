@@ -1,10 +1,9 @@
-// contentScript.js
+// Content script entry (verifies tabCapture availability and listens for START_CAPTURE messages).
 console.log('contentScript.js loaded');
 if (!chrome.tabCapture || !chrome.tabCapture.capture) {
     console.warn('tabCapture API not available in this tab.');
 }
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    console.log('contentScript.js received message:', msg);
     if (msg.type === 'START_CAPTURE') {
         if (!chrome.tabCapture || !chrome.tabCapture.capture) {
             sendResponse({ success: false, error: 'tabCapture API not available in this tab.' });

@@ -1,5 +1,4 @@
-// audioProcessing.js (AudioWorklet-based pipeline with fallback)
-// Capture MediaStream -> (AudioWorklet batches mono float32) -> downsample (16k) -> convert 16-bit PCM -> push to Azure PushAudioInputStream.
+// Push audio pipeline: worklet (preferred) -> downsample 16k mono -> push to Speech SDK.
 // Falls back to deprecated ScriptProcessorNode if AudioWorklet not available or module load fails.
 
 export async function createAudioPushPipeline(stream) {
@@ -55,8 +54,8 @@ export async function createAudioPushPipeline(stream) {
 
   async function initWorklet() {
     const workletUrl = (typeof chrome !== 'undefined' && chrome.runtime?.getURL)
-      ? chrome.runtime.getURL('pcm-worklet.js')
-      : 'pcm-worklet.js';
+      ? chrome.runtime.getURL('src/worklets/pcm-worklet.js')
+      : 'src/worklets/pcm-worklet.js';
     await audioContext.audioWorklet.addModule(workletUrl);
     workletNode = new AudioWorkletNode(audioContext, 'pcm-capture-processor');
     workletNode.port.onmessage = (e) => { handleSamples(e.data); };

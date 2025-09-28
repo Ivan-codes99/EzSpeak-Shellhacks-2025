@@ -1,12 +1,8 @@
-// visualizer.js
-// Creates an audio visualization + optional speech activity detection loop.
-// Returns { stop, setVolume }.
-
+// Lightweight amplitude + optional speech activity estimator.
 export function startVisualization(stream, { onLevel, onSpeechActive }) {
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const source = audioContext.createMediaStreamSource(stream);
   const gainNode = audioContext.createGain();
-  // Default volume (will be updated by caller if slider present)
   gainNode.gain.value = 0.2;
   source.connect(gainNode);
   gainNode.connect(audioContext.destination);
@@ -18,8 +14,8 @@ export function startVisualization(stream, { onLevel, onSpeechActive }) {
   const dataArray = new Uint8Array(analyser.frequencyBinCount);
   let rafId = null;
 
-  // Speech activity heuristic state (used only if callback provided)
-  let baselineAccum = 0, baselineCount = 0, baselineRms = 0.0;
+  // Simple adaptive noise floor + hysteresis for speech on/off
+  let baselineAccum = 0, baselineCount = 0, baselineRms = 0;
   let speechActive = false, activeFrames = 0, silenceFrames = 0;
   const REQUIRED_ACTIVE_FRAMES = 4;
   const REQUIRED_SILENCE_FRAMES = 20;
@@ -28,14 +24,11 @@ export function startVisualization(stream, { onLevel, onSpeechActive }) {
 
   function step() {
     analyser.getByteTimeDomainData(dataArray);
-    let sum = 0;
-    for (let i = 0; i < dataArray.length; i++) sum += Math.abs(dataArray[i] - 128);
-    const norm = sum / dataArray.length / 128; // ~0..1 amplitude proxy
-
+    let sum = 0; for (let i = 0; i < dataArray.length; i++) sum += Math.abs(dataArray[i] - 128);
+    const norm = sum / dataArray.length / 128;
     if (onLevel) onLevel(norm);
 
     if (onSpeechActive) {
-      // Adaptive noise floor build
       if (baselineCount < MAX_BASELINE_SAMPLES) {
         baselineAccum += norm; baselineCount++; baselineRms = Math.max(MIN_BASELINE, baselineAccum / baselineCount);
       } else {
@@ -47,19 +40,17 @@ export function startVisualization(stream, { onLevel, onSpeechActive }) {
       if (!speechActive && activeFrames >= REQUIRED_ACTIVE_FRAMES) { speechActive = true; onSpeechActive(true); }
       else if (speechActive && silenceFrames >= REQUIRED_SILENCE_FRAMES) { speechActive = false; onSpeechActive(false); }
     }
-
     rafId = requestAnimationFrame(step);
   }
   step();
 
   function stop() {
-    try { cancelAnimationFrame(rafId); } catch (_) {}
-    try { source.disconnect(); } catch (_) {}
-    try { gainNode.disconnect(); } catch (_) {}
-    try { analyser.disconnect(); } catch (_) {}
-    try { audioContext.close(); } catch (_) {}
+    try { cancelAnimationFrame(rafId); } catch(_) {}
+    try { source.disconnect(); } catch(_) {}
+    try { gainNode.disconnect(); } catch(_) {}
+    try { analyser.disconnect(); } catch(_) {}
+    try { audioContext.close(); } catch(_) {}
   }
-  function setVolume(v) { try { gainNode.gain.value = v; } catch (_) {} }
-
+  function setVolume(v) { try { gainNode.gain.value = v; } catch(_) {} }
   return { stop, setVolume };
 }
