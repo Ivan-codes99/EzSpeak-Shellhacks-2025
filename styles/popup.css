@@ -1,5 +1,9 @@
 @import 'variables.css';
 
+:root { /* Added configurable popup width */
+    --popup-width: 420px; /* increase from previous fixed 320px */
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -8,13 +12,26 @@
 
 body {
     font-family: var(--font-family-system);
-    width: 320px;
+    width: var(--popup-width); /* was 320px */
     height: 500px;
     background: var(--bg-root);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     position: relative;
+}
+
+/* Allow the long greeting to wrap instead of truncating if still constrained */
+.app-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    font-family: var(--font-family-display);
+    white-space: normal; /* was nowrap */
+    overflow: visible; /* remove ellipsis cut off */
+    text-overflow: initial;
+    line-height: 1.05;
 }
 
 .top-nav {
@@ -50,17 +67,6 @@ body {
     width: 70px;
     height: 50px;
     object-fit: cover;
-}
-
-.app-name {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.5px;
-    font-family: var(--font-family-display);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .content {
@@ -129,6 +135,12 @@ body {
     border-radius: 50%;
     background: var(--accent);
     box-shadow: 0 0 2px rgba(0,0,0,0.4);
+}
+/* New styling for bold labels before colon */
+.benefits .benefit-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: .2px;
 }
 
 .feature-item {
