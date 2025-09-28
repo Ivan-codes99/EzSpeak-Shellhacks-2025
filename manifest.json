@@ -5,7 +5,15 @@
   "version": "0.1",
 
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": "test.jpg"
+  },
+
+  "icons": {
+    "16": "test.jpg",
+    "32": "test.jpg",
+    "48": "test.jpg",
+    "128": "test.jpg"
   },
 
   "background": {
