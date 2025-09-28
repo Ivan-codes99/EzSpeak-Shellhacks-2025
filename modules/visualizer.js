@@ -3,7 +3,7 @@ export function startVisualization(stream, { onLevel, onSpeechActive }) {
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const source = audioContext.createMediaStreamSource(stream);
   const gainNode = audioContext.createGain();
-  gainNode.gain.value = 0.2;
+  gainNode.gain.value = 0.15; // changed from 0.2 to match new default playback volume (15%)
   source.connect(gainNode);
   gainNode.connect(audioContext.destination);
 
