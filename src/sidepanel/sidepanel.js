@@ -195,7 +195,7 @@ async function main() {
         }
       },
       onCanceled: err => updateStatus('Translation canceled: ' + err),
-      onSessionStarted: () => updateStatus('Translation session started'),
+      onSessionStarted: () => updateStatus('Tab Audio'), // changed from 'Translation session started'
       onSessionStopped: () => updateStatus('Translation session stopped'),
       onSpeechStart: () => updateSpeechActivity(true),
       onSpeechEnd: () => updateSpeechActivity(false)
