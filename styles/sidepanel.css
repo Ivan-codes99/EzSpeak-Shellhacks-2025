@@ -437,6 +437,24 @@ body::-webkit-scrollbar-thumb:hover { background: #3C3554; }
 .voice-level-fill { background: linear-gradient(90deg,#5E46B6 0%, #7A53DD 70%) !important; box-shadow: 0 0 4px rgba(139,92,246,0.45); }
 .voice-level:hover .voice-level-fill, #audio-indicator-container:hover #audio-indicator { filter: brightness(1.05) saturate(1.05); }
 
+/* Separator line + gap below header */
+.header-separator {
+  height: 1px;
+  margin: 18px 4px 26px; /* top gap, then larger bottom gap before content */
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0) 100%);
+  border: none;
+  position: relative;
+}
+/* Optional subtle glow */
+.header-separator::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: 0;
+  box-shadow: 0 0 6px rgba(139,92,246,0.25);
+  pointer-events: none;
+  opacity: .35;
+}
+
 @media (max-width: 420px) {
   #audio-indicator-container { max-width: 100%; }
   .voice-level { width: 110px; }
