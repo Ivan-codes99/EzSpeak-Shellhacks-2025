@@ -107,7 +107,10 @@ async function main() {
     if (ui.voiceToggle) {
       ui.voiceToggle.addEventListener('change', () => {
         if (ttsEngine) ttsEngine.setEnabled(ui.voiceToggle.checked);
-        // No status text for enable/disable states anymore
+        if (!ui.voiceToggle.checked) {
+          const fill = document.getElementById('voice-level-fill');
+          if (fill) { fill.style.width = '0%'; fill.classList.remove('active'); }
+        }
       });
     }
     if (ui.ttsVolumeSlider) {
@@ -133,8 +136,8 @@ async function main() {
         onLevel: (rms) => {
           if (!voiceLevelFill) return;
           smooth = smooth * 0.7 + rms * 0.3;
-          const pct = Math.min(1, smooth * 3);
-          voiceLevelFill.style.height = (pct * 100).toFixed(1) + '%';
+          const pct = Math.min(1, smooth * 3); // amplify visually
+          voiceLevelFill.style.width = (pct * 100).toFixed(1) + '%';
           if (pct > 0.02) voiceLevelFill.classList.add('active'); else voiceLevelFill.classList.remove('active');
         }
       });
