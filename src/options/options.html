@@ -6,24 +6,35 @@
   <link rel="stylesheet" href="../../styles/options.css">
 </head>
 <body>
-  <h1>EzSpeak Settings</h1>
-  <p>Enter your Azure Speech subscription key and region. These values are stored locally using chrome.storage.sync.</p>
-  <div class="row">
-    <label for="speechKey">Azure Speech Key</label>
-    <input id="speechKey" type="password" autocomplete="off" placeholder="Paste subscription key" />
+  <!-- Unified header (matches popup / sidepanel) -->
+  <div class="top-nav">
+    <div class="app-icon"><img src="../../assets/test.jpg" alt="EzSpeak logo"></div>
+    <div class="app-name"><span class="brand-gradient">EzSpeak</span> Settings</div>
   </div>
-  <div class="row">
-    <label for="speechRegion">Azure Speech Region</label>
-    <input id="speechRegion" type="text" autocomplete="off" placeholder="e.g. eastus, westus2" />
-  </div>
-  <div class="row">
-    <label for="speechLang">Recognition Language (optional)</label>
-    <input id="speechLang" type="text" placeholder="e.g. en-US" />
-    <div class="note">Defaults to en-US if left blank.</div>
-  </div>
-  <button id="saveBtn">Save</button>
-  <button id="clearBtn">Clear</button>
-  <div id="status"></div>
+
+  <main class="options-content">
+    <p class="intro">Configure your Azure Speech credentials and defaults. Stored locally via <code>chrome.storage.sync</code>.</p>
+
+    <div class="row">
+      <label for="speechKey">Azure Speech Key</label>
+      <input id="speechKey" type="password" autocomplete="off" placeholder="Paste subscription key" />
+    </div>
+    <div class="row">
+      <label for="speechRegion">Azure Speech Region</label>
+      <input id="speechRegion" type="text" autocomplete="off" placeholder="e.g. eastus, westus2" />
+    </div>
+    <div class="row">
+      <label for="speechLang">Recognition Language (optional)</label>
+      <input id="speechLang" type="text" placeholder="e.g. en-US" />
+      <div class="note">Defaults to en-US if left blank.</div>
+    </div>
+
+    <div class="actions">
+      <button id="saveBtn" class="primary">Save</button>
+      <button id="clearBtn" class="secondary">Clear</button>
+    </div>
+    <div id="status" aria-live="polite"></div>
+  </main>
   <script src="options.js"></script>
 </body>
 </html>

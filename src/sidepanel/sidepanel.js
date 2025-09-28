@@ -104,13 +104,22 @@ async function main() {
       return;
     }
     ui.voiceControls.style.display = 'flex';
+
+    function applyVoiceEnabled() {
+      if (!ui.voiceControls || !ui.voiceToggle) return;
+      if (ui.voiceToggle.checked) ui.voiceControls.classList.add('voice-enabled');
+      else ui.voiceControls.classList.remove('voice-enabled');
+    }
+
     if (ui.voiceToggle) {
+      applyVoiceEnabled();
       ui.voiceToggle.addEventListener('change', () => {
         if (ttsEngine) ttsEngine.setEnabled(ui.voiceToggle.checked);
         if (!ui.voiceToggle.checked) {
           const fill = document.getElementById('voice-level-fill');
           if (fill) { fill.style.width = '0%'; fill.classList.remove('active'); }
         }
+        applyVoiceEnabled();
       });
     }
     if (ui.ttsVolumeSlider) {
@@ -195,7 +204,7 @@ async function main() {
         }
       },
       onCanceled: err => updateStatus('Translation canceled: ' + err),
-      onSessionStarted: () => updateStatus('Translation session started'),
+      onSessionStarted: () => updateStatus('Tab Audio'), // changed from 'Translation session started'
       onSessionStopped: () => updateStatus('Translation session stopped'),
       onSpeechStart: () => updateSpeechActivity(true),
       onSpeechEnd: () => updateSpeechActivity(false)

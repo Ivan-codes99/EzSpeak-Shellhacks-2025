@@ -1,5 +1,9 @@
 @import 'variables.css';
 
+:root { /* Added configurable popup width */
+    --popup-width: 420px; /* increase from previous fixed 320px */
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -8,7 +12,7 @@
 
 body {
     font-family: var(--font-family-system);
-    width: 320px;
+    width: var(--popup-width); /* was 320px */
     height: 500px;
     background: var(--bg-root);
     display: flex;
@@ -17,24 +21,20 @@ body {
     position: relative;
 }
 
+/* Top nav: revert to flex, icon left, text absolutely centered */
 .top-nav {
+    position: relative; /* allow absolute centering of title */
     display: flex;
-    justify-content: space-between;
     align-items: center;
     padding: var(--space-xs) var(--space-md);
-    background: rgba(50, 50, 50, 0.6);
+    background: rgba(50, 50, 50, 0.55);
     backdrop-filter: blur(10px);
-    margin: 0 -var(--space-lg);
-    min-height: 52px;
-}
-
-.app-info {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    margin-left: 10px;
-    flex: 1;
-    min-width: 0;
+    /* old: margin: 0 -var(--space-lg); */
+    margin: var(--space-sm) var(--space-sm) 4px; /* inset so curvature shows */
+    min-height: 58px;
+    border-radius: 20px; /* curvier */
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 14px -4px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.02) inset;
 }
 
 .app-icon {
@@ -44,23 +44,46 @@ body {
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
+    z-index: 2;
 }
 
 .app-icon img {
     width: 70px;
     height: 50px;
     object-fit: cover;
+    border-radius: 12px;
+}
+
+/* Absolutely centered header independent of icon width */
+.header-centered {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%; /* so multiline remains centered */
+    text-align: center;
+    padding: 0 70px; /* side padding to avoid overlap with icon area */
+    pointer-events: none; /* header doesn't block clicks */
 }
 
 .app-name {
-    font-size: 24px;
+    font-size: 26px; /* was 24px */
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.5px;
     font-family: var(--font-family-display);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal; /* was nowrap */
+    overflow: visible; /* remove ellipsis cut off */
+    text-overflow: initial;
+    line-height: 1.1;
+}
+
+/* Gradient styling reused for brand name */
+.brand-gradient {
+    background: linear-gradient(90deg,var(--accent) 0%, #c6b5ff 90%);
+    -webkit-background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.35));
 }
 
 .content {
@@ -69,13 +92,13 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px var(--space-xl) 30px;
+    padding: 36px var(--space-xl) 30px;
     text-align: center;
     position: relative;
 }
 
 .text-content {
-    margin-top: -100px;
+    margin-top: -96px;
 }
 
 .welcome-text {
@@ -87,17 +110,62 @@ body {
 
 .subtitle {
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 15px; /* was 14px */
     line-height: 1.4;
-    margin-bottom: 30px;
+    margin-bottom: 12px; /* tightened for new list */
+}
+
+/* Tagline styling (nested inside subtitle) */
+.tagline {
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: .25px;
+    background: linear-gradient(90deg,var(--accent) 0%, #c6b5ff 90%);
+    -webkit-background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.35));
+}
+
+/* Benefits list replacing long paragraph */
+.benefits {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13.5px; /* was 12.5px */
+    color: var(--text-secondary);
+}
+.benefits li {
+    position: relative;
+    padding-left: 16px; /* adjusted for custom dot */
+    line-height: 1.35;
+}
+.benefits li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 6px; /* vertically centers for this font size */
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 2px rgba(0,0,0,0.4);
+}
+/* New styling for bold labels before colon */
+.benefits .benefit-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: .2px;
 }
 
 .feature-item {
     display: flex;
     gap: var(--space-md);
     color: var(--text-primary);
-    font-size: 14px;
-    margin-bottom: 20px;
+    font-size: 15px; /* was 14px */
+    margin-bottom: 18px;
     justify-content: center;
     align-items: center;
 }
@@ -124,7 +192,7 @@ select {
     background: var(--bg-elev-2);
     border: 1px solid var(--accent);
     border-radius: var(--radius-md);
-    font-size: 14px;
+    font-size: 15px; /* was 14px */
     color: var(--text-primary);
     outline: none;
     margin-bottom: var(--space-lg);
@@ -150,7 +218,7 @@ select option {
     border: none;
     border-radius: var(--radius-lg);
     color: white;
-    font-size: 16px;
+    font-size: 17px; /* was 16px */
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;

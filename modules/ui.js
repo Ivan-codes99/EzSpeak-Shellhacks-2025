@@ -55,7 +55,7 @@ export function updateStatus(msg) {
 
 export function setDetectedLanguage(lang) {
   const el = document.getElementById('detected-language');
-  if (el) el.textContent = 'Detected language: ' + humanLanguageName(lang);
+  if (el) el.textContent = 'Language: ' + humanLanguageName(lang);
 }
 
 export function updateAudioLevel(level) {
@@ -67,16 +67,16 @@ export function updateAudioLevel(level) {
 
 export function updateSpeechActivity(active) {
   const dot = document.getElementById('speech-dot');
-  const label = document.getElementById('speech-label');
-  if (!dot || !label) return;
+  const label = document.getElementById('speech-label'); // may be absent now
+  if (!dot) return; // allow operation without label
   if (active) {
     dot.style.background = '#2e7d32';
     dot.style.boxShadow = '0 0 6px 2px rgba(46,125,50,0.55)';
-    label.textContent = 'Speech: active';
+    if (label) label.textContent = 'Speech: active';
   } else {
     dot.style.background = '#bbb';
     dot.style.boxShadow = '0 0 0 0 rgba(0,0,0,0.15)';
-    label.textContent = 'Speech: silence';
+    if (label) label.textContent = 'Speech: silence';
   }
 }
 
