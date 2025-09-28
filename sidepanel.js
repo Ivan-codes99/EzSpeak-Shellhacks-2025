@@ -20,13 +20,13 @@ async function main() {
   const ui = initUI();
   updateStatus('Initializing...');
 
-  // Collapsible transcript sections (source + translation)
+  // Collapsible transcript sections (source + translation) - always default open each load (no persistence)
   const toggles = [
-    { btnId: 'toggleSourceTranscriptBtn', sectionId: 'source-transcript-section', storageKey: 'sourceTranscriptCollapsed' },
-    { btnId: 'toggleTranscriptBtn', sectionId: 'transcript-section', storageKey: 'translationTranscriptCollapsed' }
+    { btnId: 'toggleSourceTranscriptBtn', sectionId: 'source-transcript-section' },
+    { btnId: 'toggleTranscriptBtn', sectionId: 'transcript-section' }
   ];
 
-  function wireToggle({ btnId, sectionId, storageKey }) {
+  function wireToggle({ btnId, sectionId }) {
     const btn = document.getElementById(btnId);
     const section = document.getElementById(sectionId);
     if (!btn || !section) return;
@@ -36,19 +36,12 @@ async function main() {
       section.classList.toggle('collapsed', !expanded);
     }
 
-    // Restore persisted state
-    try {
-      chrome.storage.local.get([storageKey], items => {
-        const collapsed = items[storageKey] === true;
-        apply(!collapsed);
-      });
-    } catch(_) { /* ignore */ }
+    // Force default open every load
+    apply(true);
 
     btn.addEventListener('click', () => {
       const expanded = btn.getAttribute('aria-expanded') === 'true';
-      const next = !expanded;
-      apply(next);
-      try { chrome.storage.local.set({ [storageKey]: !next }); } catch(_) {}
+      apply(!expanded);
     });
   }
 
@@ -82,10 +75,9 @@ async function main() {
   }
   updateStatus('Capturing tab audio...');
 
-  // Visualization
+  // Visualization (level only; speech activity now from SDK events)
   const vizController = startVisualization(stream, {
-    onLevel: level => updateAudioLevel(level),
-    onSpeechActive: active => updateSpeechActivity(active)
+    onLevel: level => updateAudioLevel(level)
   });
 
   if (ui.volumeSlider && vizController.setVolume) {
@@ -113,7 +105,9 @@ async function main() {
       onRecognized: text => { setSourceTranscriptOutput(text, { partial: false }); },
       onCanceled: err => updateStatus('Canceled: ' + err),
       onSessionStarted: () => updateStatus('Session started'),
-      onSessionStopped: () => updateStatus('Session stopped')
+      onSessionStopped: () => updateStatus('Session stopped'),
+      onSpeechStart: () => updateSpeechActivity(true),
+      onSpeechEnd: () => updateSpeechActivity(false)
     });
     currentStop = stop;
   }
@@ -135,7 +129,9 @@ async function main() {
       onTranslationRecognized: t => setTranslationOutput(t, { partial: false }),
       onCanceled: err => updateStatus('Translation canceled: ' + err),
       onSessionStarted: () => updateStatus('Translation session started'),
-      onSessionStopped: () => updateStatus('Translation session stopped')
+      onSessionStopped: () => updateStatus('Translation session stopped'),
+      onSpeechStart: () => updateSpeechActivity(true),
+      onSpeechEnd: () => updateSpeechActivity(false)
     });
     currentStop = stop;
   }

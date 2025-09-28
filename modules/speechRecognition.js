@@ -12,7 +12,9 @@ export function createAutoDetectRecognizer({
   onRecognized = () => {},
   onCanceled = () => {},
   onSessionStarted = () => {},
-  onSessionStopped = () => {}
+  onSessionStopped = () => {},
+  onSpeechStart = () => {},
+  onSpeechEnd = () => {}
 }) {
   if (!SpeechSDK) throw new Error('SpeechSDK missing');
   if (!pushStream) throw new Error('pushStream missing');
@@ -96,6 +98,11 @@ export function createAutoDetectRecognizer({
       onRecognized(e.result.text);
     }
   };
+  // Attach SDK speech events
+  try {
+    recognizer.speechStartDetected = () => { try { onSpeechStart(); } catch(_){} };
+    recognizer.speechEndDetected = () => { try { onSpeechEnd(); } catch(_){} };
+  } catch(_) {}
 
   recognizer.canceled = (_s, e) => onCanceled(e.errorDetails || 'Canceled');
   recognizer.sessionStarted = () => onSessionStarted();
@@ -129,7 +136,9 @@ export function createAutoDetectTranslationRecognizer({
   onTranslationRecognized = () => {},
   onCanceled = () => {},
   onSessionStarted = () => {},
-  onSessionStopped = () => {}
+  onSessionStopped = () => {},
+  onSpeechStart = () => {},
+  onSpeechEnd = () => {}
 }) {
   if (!SpeechSDK) throw new Error('SpeechSDK missing');
   if (!pushStream) throw new Error('pushStream missing');
@@ -228,6 +237,11 @@ export function createAutoDetectTranslationRecognizer({
       }
     }
   };
+  // Attach SDK speech events
+  try {
+    recognizer.speechStartDetected = () => { try { onSpeechStart(); } catch(_){} };
+    recognizer.speechEndDetected = () => { try { onSpeechEnd(); } catch(_){} };
+  } catch(_) {}
 
   recognizer.canceled = (_s, e) => onCanceled(e.errorDetails || 'Canceled');
   recognizer.sessionStarted = () => onSessionStarted();
