@@ -5,4 +5,3 @@ input[type=text], input[type=password] { width: 360px; max-width:100%; padding:6
 button { margin-top:16px; padding:8px 16px; cursor:pointer; }
 #status { margin-top:12px; font-size:0.9em; }
 .note { font-size:0.8em; color:#555; margin-top:4px; }
-
