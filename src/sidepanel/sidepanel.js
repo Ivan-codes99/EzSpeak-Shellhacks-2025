@@ -1,4 +1,4 @@
-// Orchestrator for side panel logic (ES module)
+// Side panel orchestration: credentials -> capture -> visualize -> recognize (speech or translation + optional TTS).
 // Responsibilities:
 // 1. Acquire credentials
 // 2. Capture tab audio

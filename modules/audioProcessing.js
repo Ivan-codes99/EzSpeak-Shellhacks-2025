@@ -1,5 +1,4 @@
-// audioProcessing.js (AudioWorklet-based pipeline with fallback)
-// Capture MediaStream -> (AudioWorklet batches mono float32) -> downsample (16k) -> convert 16-bit PCM -> push to Azure PushAudioInputStream.
+// Push audio pipeline: worklet (preferred) -> downsample 16k mono -> push to Speech SDK.
 // Falls back to deprecated ScriptProcessorNode if AudioWorklet not available or module load fails.
 
 export async function createAudioPushPipeline(stream) {

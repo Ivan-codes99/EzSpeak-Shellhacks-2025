@@ -1,7 +1,4 @@
-// credentials.js
-// Loads Azure Speech credentials (subscription key+region or auth token+region)
-// Priority: window.__ENV -> chrome.storage.sync
-
+// Minimal credential loader: attempts injected env first, then chrome.storage.sync.
 export async function loadSpeechCredentials() {
   // Global injected env script
   if (typeof window !== 'undefined' && window.__ENV && (window.__ENV.AZURE_SPEECH_KEY || window.__ENV.AZURE_SPEECH_AUTH_TOKEN)) {
@@ -35,4 +32,3 @@ export async function loadSpeechCredentials() {
     });
   });
 }
-
