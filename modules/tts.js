@@ -1,7 +1,7 @@
 // Text-to-Speech engine with queue + optional output level.
 const DEFAULT_VOICE_MAP = {
-  'en-US': 'en-US-GuyNeural', 'en': 'en-US-GuyNeural',
-  'es-ES': 'es-ES-AlvaroNeural', 'es': 'es-ES-AlvaroNeural',
+      'en-US': 'en-US-DavisNeural',
+  'es-ES': 'es-ES-ArnauNeural',
   'fr-FR': 'fr-FR-HenriNeural', 'fr': 'fr-FR-HenriNeural',
   'de-DE': 'de-DE-ConradNeural', 'de': 'de-DE-ConradNeural'
 };
