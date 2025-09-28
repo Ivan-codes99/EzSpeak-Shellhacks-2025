@@ -10,7 +10,7 @@ const DEFAULT_VOICE_MAP = {
 const TTS_DEBUG = true;
 function tlog(...args) { if (TTS_DEBUG) try { console.log('[tts]', ...args); } catch(_) {} }
 
-export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = DEFAULT_VOICE_MAP, onState = () => {} }) {
+export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = DEFAULT_VOICE_MAP, onState = () => {}, onLevel = null }) {
   if (!SpeechSDK) throw new Error('SpeechSDK missing');
   if (!targetLanguage) throw new Error('targetLanguage missing');
 
@@ -23,6 +23,9 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
   let disposed = false;
   let audioCtx = null;
   let gainNode = null;
+  let analyser = null;
+  let levelRaf = null;
+  let lastLevelEmit = 0;
 
   function voiceFor(lang) {
     return voiceMap[lang] || voiceMap[lang.split('-')[0]] || 'en-US-AriaNeural';
@@ -68,6 +71,14 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
       gainNode = audioCtx.createGain();
       gainNode.gain.value = 1.0;
       gainNode.connect(audioCtx.destination);
+      if (onLevel) {
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        const srcGain = audioCtx.createGain();
+        srcGain.gain.value = 1.0;
+        // We'll connect each buffer source to both srcGain -> analyser and analyser -> gainNode
+        analyser.connect(gainNode);
+      }
     }
   }
 
@@ -85,11 +96,46 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
       audioCtx.decodeAudioData(ab.slice(0), buffer => {
         const src = audioCtx.createBufferSource();
         src.buffer = buffer;
-        src.connect(gainNode);
+        if (analyser) {
+          // Create per-source gain routing for analyser
+            try {
+              const splitGain = audioCtx.createGain();
+              splitGain.gain.value = 1.0;
+              src.connect(splitGain);
+              splitGain.connect(analyser);
+              // analyser already connected -> gainNode
+            } catch(_) { src.connect(gainNode); }
+        } else {
+          src.connect(gainNode);
+        }
         src.onended = resolve;
         src.start();
+        if (analyser && !levelRaf) startLevelLoop();
       }, () => resolve());
     });
+  }
+
+  function startLevelLoop() {
+    if (!analyser || levelRaf) return;
+    const data = new Uint8Array(analyser.fftSize);
+    const loop = (ts) => {
+      try {
+        analyser.getByteTimeDomainData(data);
+        let sum = 0; for (let i=0;i<data.length;i++){ const v = (data[i]-128)/128; sum += v*v; }
+        const rms = Math.sqrt(sum / data.length); // 0..1 approx
+        if (onLevel && ts - lastLevelEmit > 50) { // limit ~20fps
+          lastLevelEmit = ts;
+          try { onLevel(rms); } catch(_) {}
+        }
+      } catch(_) {}
+      if (!disposed) levelRaf = requestAnimationFrame(loop);
+    };
+    levelRaf = requestAnimationFrame(loop);
+  }
+
+  function stopLevelLoop() {
+    try { if (levelRaf) cancelAnimationFrame(levelRaf); } catch(_) {}
+    levelRaf = null;
   }
 
   function dequeue() {
@@ -133,9 +179,10 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
   function dispose() {
     disposed = true;
     queue.length = 0;
+    stopLevelLoop();
     try { if (synthesizer) synthesizer.close(); } catch(_) {}
     try { if (audioCtx) audioCtx.close(); } catch(_) {}
-    synthesizer = null; audioCtx = null; gainNode = null;
+    synthesizer = null; audioCtx = null; gainNode = null; analyser = null;
     emit('disposed');
   }
 
@@ -144,4 +191,3 @@ export function createTTSEngine({ SpeechSDK, creds, targetLanguage, voiceMap = D
   emit('enabled');
   return { speak, setEnabled, dispose, test, setVolume };
 }
-

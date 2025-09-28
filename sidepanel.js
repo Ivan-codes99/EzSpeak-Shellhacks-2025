@@ -107,7 +107,7 @@ async function main() {
     if (ui.voiceToggle) {
       ui.voiceToggle.addEventListener('change', () => {
         if (ttsEngine) ttsEngine.setEnabled(ui.voiceToggle.checked);
-        setVoiceStatus(ui.voiceToggle.checked ? 'Voice: enabled' : 'Voice: disabled');
+        // No status text for enable/disable states anymore
       });
     }
     if (ui.ttsVolumeSlider) {
@@ -119,31 +119,46 @@ async function main() {
 
   function createAndInitTTS(targetLang) {
     try {
+      const voiceLevelEl = document.getElementById('voice-level');
+      const voiceLevelFill = document.getElementById('voice-level-fill');
+      let smooth = 0; // simple smoothing for UI
       ttsEngine = createTTSEngine({
         SpeechSDK: window.SpeechSDK,
         creds,
         targetLanguage: targetLang,
         onState: (state, detail) => {
           switch (state) {
-            case 'enabled': setVoiceStatus('Voice: enabled'); break;
-            case 'disabled': setVoiceStatus('Voice: disabled'); break;
-            case 'queue': setVoiceStatus(`Voice: queue (${detail?.size||0})`); break;
-            case 'synthesizing': setVoiceStatus('Voice: synthesizing'); break;
-            case 'decoding': setVoiceStatus('Voice: decoding'); break;
-            case 'done':
-            case 'idle': setVoiceStatus('Voice: idle'); break;
-            case 'error': setVoiceStatus('Voice: error'); break;
-            case 'disposed': setVoiceStatus('Voice: disposed'); break;
+            case 'queue':
+            case 'synthesizing':
+            case 'decoding':
+            case 'error':
+              // status pill removed; ignoring textual output
+              break;
+            default:
+              break;
           }
+          if (state === 'error' && voiceLevelFill) {
+            voiceLevelFill.style.background = 'linear-gradient(180deg,#EF4444,#B91C1C)';
+          }
+        },
+        onLevel: (rms) => {
+          if (!voiceLevelFill) return;
+          // scale RMS (0..1) to something more visually responsive
+            smooth = smooth * 0.7 + rms * 0.3;
+            const pct = Math.min(1, smooth * 3); // boost visual
+            voiceLevelFill.style.height = (pct * 100).toFixed(1) + '%';
+            if (pct > 0.02) {
+              voiceLevelFill.classList.add('active');
+            } else {
+              voiceLevelFill.classList.remove('active');
+            }
         }
       });
       initVoiceControls();
       if (ui.voiceToggle) ttsEngine.setEnabled(ui.voiceToggle.checked);
       if (ui.ttsVolumeSlider) ttsEngine.setVolume(parseFloat(ui.ttsVolumeSlider.value));
-      if (ui.voiceToggle) setVoiceStatus(ui.voiceToggle.checked ? 'Voice: enabled' : 'Voice: disabled');
     } catch (e) {
       console.warn('[tts] init failed', e);
-      setVoiceStatus('Voice: error');
       ttsEngine = null;
     }
   }
