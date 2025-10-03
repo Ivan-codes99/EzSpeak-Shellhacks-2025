@@ -1,7 +1,13 @@
-# EzSpeak
+# EzSpeak Shellhacks 2025 winner!
+Live captions, translation, and AI voice for anything playing in your Chrome tab. Built for ShellHacks 2025. This project won second place for Google challenge! The challenge was **AI for Social Good** 
 
-Live captions, translation, and AI voice for anything playing in your Chrome tab. Built for ShellHacks.
+This repo contains the project as it was submitted for the hackathon
 
+[Devpost link](https://devpost.com/software/ezspeak-30hy1w) (need account to view)
+
+# Demo video - Youtube link
+[![Watch the video](https://img.youtube.com/vi/0lh1fenJgQw/0.jpg)](https://youtu.be/0lh1fenJgQw)
+# extension popup
 ![EzSpeak Popup](./EzSpeak_popup.jpg)
 
 ## What it does
@@ -19,7 +25,7 @@ It works anywhere audio plays in a tab—no special integration with each site.
   - Translation (your chosen language)
   - Text‑to‑speech (optional AI voice)
 - Results appear in Chrome’s Side Panel so you can read along and, if you want, hear the translated voice.
-
+# extension sidebar
 ![EzSpeak Popup](./EzSpeak_sidebar.jpg)
 
 ## Powered by Azure
