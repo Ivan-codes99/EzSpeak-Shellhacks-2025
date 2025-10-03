@@ -2,6 +2,8 @@
 
 Live captions, translation, and AI voice for anything playing in your Chrome tab. Built for ShellHacks.
 
+![EzSpeak Popup](./EzSpeak_popup.jpg)
+
 ## What it does
 EzSpeak helps you follow and understand spoken content online. Whether it’s a Zoom class, a YouTube talk, or a live stream, EzSpeak:
 - Shows real‑time captions of what’s being said
@@ -17,6 +19,8 @@ It works anywhere audio plays in a tab—no special integration with each site.
   - Translation (your chosen language)
   - Text‑to‑speech (optional AI voice)
 - Results appear in Chrome’s Side Panel so you can read along and, if you want, hear the translated voice.
+
+![EzSpeak Popup](./EzSpeak_sidebar.jpg)
 
 ## Powered by Azure
 Microsoft Azure Cognitive Services Speech is the backbone of EzSpeak. Azure provides the real‑time speech recognition, translation, and high‑quality voice synthesis that make EzSpeak fast and reliable.
